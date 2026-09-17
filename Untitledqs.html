@@ -1,0 +1,2556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L.J. Industries - Corrugated Packaging, Costing & Reel Stock ERP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#b91c1c',
+                        brandRedDark: '#991b1b',
+                        brandRedLight: '#dc2626'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Menlo', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .costing-input-red {
+            color: #dc2626 !important;
+            font-weight: 800 !important;
+            border: 1.5px solid #f87171 !important;
+            background-color: #fef2f2 !important;
+            text-align: center;
+            border-radius: 4px;
+            transition: all 0.15s ease-in-out;
+        }
+        .costing-input-red:focus {
+            outline: none;
+            border-color: #b91c1c !important;
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.25);
+        }
+        .costing-fixed-black {
+            color: #0f172a;
+            font-weight: 800;
+            text-align: center;
+        }
+        .excel-cell {
+            border: 1px solid #cbd5e1;
+            padding: 6px 8px;
+        }
+        .btn-outline-red {
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            color: #b91c1c;
+            font-weight: 800;
+            background: #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-outline-red:hover {
+            background-color: #fef2f2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px -2px rgba(220, 38, 38, 0.25);
+        }
+        .btn-outline-red:active { transform: scale(0.98); }
+
+        .legacy-field {
+            border: 1.5px solid #64748b;
+            background: #ffffff;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 4px 6px;
+            outline: none;
+        }
+        .legacy-field:focus {
+            border-color: #0f172a;
+            background-color: #f0fdf4;
+        }
+
+        @media print {
+            aside, #mobileNav, .no-print { display: none !important; }
+            main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col md:flex-row antialiased select-none md:select-auto">
+
+    <!-- Mobile Header -->
+    <header id="mobileNav" class="md:hidden bg-brandRed text-white p-4 flex items-center justify-between shadow-md z-40 sticky top-0">
+        <div class="flex items-center space-x-2.5 font-black tracking-wide text-lg">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span>L.J. Industries ERP</span>
+        </div>
+        <button onclick="ERP.toggleMobileSidebar()" class="text-white p-1.5 hover:bg-brandRedDark rounded">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </header>
+
+    <!-- Deep Red Sidebar Navigation -->
+    <aside id="sidebar" class="w-full md:w-72 lg:w-80 bg-brandRed text-white flex-shrink-0 flex flex-col justify-between p-5 shadow-2xl hidden md:flex min-h-screen transition-all duration-300 z-30">
+        <div class="space-y-4">
+            <!-- Brand Header -->
+            <div class="border-b border-red-400/40 pb-4">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="ERP.switchTab('dashboard')">
+                    <div class="w-10 h-10 rounded-lg bg-white text-brandRed flex items-center justify-center font-black text-xl shadow-lg">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-lg leading-tight tracking-wide">L.J. Industries</h1>
+                        <p class="text-[11px] text-red-200">Packaging, Costing & Stock ERP</p>
+                    </div>
+                </div>
+
+                <!-- Admin Profile Card -->
+                <div class="mt-3.5 bg-black/25 rounded-lg p-2.5 border border-white/15 flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5 overflow-hidden">
+                        <div class="w-8 h-8 rounded-full bg-yellow-400 text-black font-black flex items-center justify-center text-xs shadow">
+                            P
+                        </div>
+                        <div class="overflow-hidden">
+                            <span class="text-xs font-bold text-white block truncate">Pushpendra (Admin)</span>
+                            <span class="text-[10px] font-black uppercase px-1.5 py-0.2 rounded bg-red-950 text-yellow-300 border border-yellow-400/30">Admin Office</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex flex-col space-y-2">
+                <!-- 0. Home / Dashboard -->
+                <button id="navBtn-dashboard" onclick="ERP.switchTab('dashboard')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-white/90 hover:bg-white/10 transition flex items-center justify-between shadow-sm bg-white/20">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid fa-chart-line text-sm opacity-90"></i>
+                        <span>Dashboard (Home)</span>
+                    </div>
+                    <span id="navOrderBadge" class="text-[10px] bg-white text-brandRed font-black px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <!-- 1. Add Company -->
+                <button id="navBtn-companies" onclick="ERP.switchTab('companies')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-white/90 hover:bg-white/10 transition flex items-center justify-between shadow-sm">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid fa-building text-sm opacity-90"></i>
+                        <span>Add company</span>
+                    </div>
+                </button>
+
+                <!-- 2. Add New Box Size -->
+                <button id="navBtn-addBox" onclick="ERP.switchTab('addBox')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-white/90 hover:bg-white/10 transition flex items-center justify-between shadow-sm">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid fa-box-open text-sm opacity-90"></i>
+                        <span>Add New box size</span>
+                    </div>
+                </button>
+
+                <!-- 3. Search Box Size -->
+                <button id="navBtn-searchBox" onclick="ERP.switchTab('searchBox')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-white/90 hover:bg-white/10 transition flex items-center justify-between shadow-sm">
+                    <div class="flex items-center space-x-2.5">
+                        <i class="fa-solid fa-magnifying-glass text-sm opacity-90"></i>
+                        <span>search box size</span>
+                    </div>
+                </button>
+
+                <!-- 4. Box Price Costing Sheet -->
+                <button id="navBtn-boxPrice" onclick="ERP.switchTab('boxPrice')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-amber-300 hover:bg-amber-400/20 transition flex items-center justify-between shadow-md">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-calculator text-sm text-yellow-300"></i>
+                        <span>box price</span>
+                        <span class="text-[9px] bg-yellow-400 text-black px-1.5 py-0.5 rounded font-black uppercase">SHEET</span>
+                    </div>
+                </button>
+
+                <!-- 5. Stock Accordion Menu -->
+                <div class="pt-1.5">
+                    <button type="button" onclick="ERP.toggleStockSubmenu()" id="stockMenuParentBtn" class="w-full py-2.5 px-3.5 text-left font-extrabold text-xs rounded-md border-2 border-emerald-400 bg-emerald-950/50 hover:bg-emerald-900/60 transition flex items-center justify-between shadow-md">
+                        <div class="flex items-center space-x-2 text-emerald-200">
+                            <i class="fa-solid fa-scroll text-yellow-300"></i>
+                            <span class="uppercase tracking-wider">STOCK (REELS)</span>
+                        </div>
+                        <i id="stockCaret" class="fa-solid fa-chevron-down text-xs text-emerald-300 transition-transform duration-200"></i>
+                    </button>
+
+                    <!-- Stock Sub-menu Drawer -->
+                    <div id="stockSubmenu" class="flex flex-col space-y-1.5 pl-3 pt-2">
+                        <button id="navBtn-paperIn" onclick="ERP.switchTab('paperIn')" class="nav-item w-full py-2 px-3 text-left font-bold text-xs rounded border border-emerald-400/60 hover:bg-white/15 transition flex items-center justify-between">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-arrow-down-long text-emerald-300"></i> paper in</span>
+                            <span class="text-[9px] px-1.5 py-0.2 bg-emerald-600 text-white rounded font-mono">PURCHASE</span>
+                        </button>
+                        <button id="navBtn-paperOut" onclick="ERP.switchTab('paperOut')" class="nav-item w-full py-2 px-3 text-left font-bold text-xs rounded border border-red-300/60 hover:bg-white/15 transition flex items-center justify-between">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-arrow-up-long text-rose-300"></i> paper out</span>
+                            <span class="text-[9px] px-1.5 py-0.2 bg-rose-600 text-white rounded font-mono">ISSUE</span>
+                        </button>
+                        <button id="navBtn-paperStock" onclick="ERP.switchTab('paperStock')" class="nav-item w-full py-2 px-3 text-left font-bold text-xs rounded border border-yellow-300/60 hover:bg-white/15 transition flex items-center justify-between">
+                            <span class="flex items-center gap-2"><i class="fa-solid fa-warehouse text-yellow-300"></i> paper stock</span>
+                            <span id="badgeTotalStockTon" class="text-[9px] px-1.5 py-0.2 bg-yellow-400 text-black rounded font-mono font-bold">0 T</span>
+                        </button>
+                        <button id="navBtn-paperMaster" onclick="ERP.switchTab('paperMaster')" class="nav-item w-full py-1.5 px-3 text-left font-bold text-xs rounded border border-white/40 hover:bg-white/15 transition flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-sky-300"></i> paper master
+                        </button>
+                        <button id="navBtn-millMaster" onclick="ERP.switchTab('millMaster')" class="nav-item w-full py-1.5 px-3 text-left font-bold text-xs rounded border border-white/40 hover:bg-white/15 transition flex items-center gap-2">
+                            <i class="fa-solid fa-industry text-amber-300"></i> mill master
+                        </button>
+                        <button id="navBtn-shadeMaster" onclick="ERP.switchTab('shadeMaster')" class="nav-item w-full py-1.5 px-3 text-left font-bold text-xs rounded border border-white/40 hover:bg-white/15 transition flex items-center gap-2">
+                            <i class="fa-solid fa-palette text-pink-300"></i> shade master
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 6. Admin Panel -->
+                <button id="navBtn-adminPanel" onclick="ERP.switchTab('adminPanel')" class="nav-item w-full py-2.5 px-3.5 text-left font-bold text-xs rounded-md border-2 border-purple-300 hover:bg-purple-900/40 transition flex items-center justify-between shadow-md">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-shield-halved text-sm text-purple-200"></i>
+                        <span>Admin Panel</span>
+                        <span class="text-[9px] bg-purple-400 text-purple-950 px-1.5 py-0.5 rounded font-black uppercase">RBAC</span>
+                    </div>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="mt-6 pt-4 border-t border-red-400/30 text-xs text-red-100 space-y-1.5">
+            <div class="flex justify-between">
+                <span>Total Reels in Store:</span>
+                <span id="statReelCount" class="font-black text-yellow-300">0</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Raw Paper Stock:</span>
+                <span id="statStockWeight" class="font-black text-white">0.000 Ton</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Registered Boxes:</span>
+                <span id="statBoxCount" class="font-black text-white">0</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col p-4 md:p-8 lg:p-10 overflow-y-auto max-w-7xl mx-auto w-full">
+        <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+        <!-- SCREEN 0: DASHBOARD -->
+        <section id="view-dashboard" class="view-content flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
+                        <i class="fa-solid fa-chart-pie text-brandRed"></i>
+                        <span>Manufacturing Dashboard & Orders</span>
+                    </h2>
+                    <p class="text-sm text-slate-500">Live order intake, corrugation production queue, and delivery tracking</p>
+                </div>
+                <button onclick="ERP.openBookOrderModal()" class="px-4 py-2.5 bg-brandRed hover:bg-brandRedDark text-white font-bold text-xs rounded-lg shadow transition flex items-center space-x-1.5 active:scale-95">
+                    <i class="fa-solid fa-cart-plus"></i>
+                    <span>Book New PO / Order</span>
+                </button>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-brandRed transition" onclick="ERP.setOrderTab('received')">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Orders Received</span>
+                        <span id="kpiReceivedCount" class="text-2xl font-black text-blue-600 mt-1 block">0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-inbox"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-brandRed transition" onclick="ERP.setOrderTab('pending')">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pending / Production</span>
+                        <span id="kpiPendingCount" class="text-2xl font-black text-amber-600 mt-1 block">0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-gears"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-brandRed transition" onclick="ERP.setOrderTab('dispatch')">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Order Dispatch</span>
+                        <span id="kpiDispatchCount" class="text-2xl font-black text-emerald-600 mt-1 block">0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-emerald-600 transition" onclick="ERP.switchTab('paperStock')">
+                    <div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Paper Reel Stock</span>
+                        <span id="kpiStockTotalTon" class="text-2xl font-black text-emerald-600 mt-1 block">0.000 Ton</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-scroll"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="flex border-b border-slate-200 bg-slate-50 px-4 pt-3 space-x-2">
+                    <button id="orderTabBtn-received" onclick="ERP.setOrderTab('received')" class="py-2.5 px-4 text-xs font-bold border-b-2 border-brandRed text-brandRed bg-white rounded-t-lg transition flex items-center space-x-1.5 shadow-sm">
+                        <i class="fa-solid fa-clipboard-list text-blue-600"></i>
+                        <span>Order Received</span>
+                        <span id="tabBadgeReceived" class="ml-1 px-1.5 py-0.2 bg-blue-100 text-blue-700 rounded-full text-[10px]">0</span>
+                    </button>
+                    <button id="orderTabBtn-pending" onclick="ERP.setOrderTab('pending')" class="py-2.5 px-4 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-t-lg transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-spinner text-amber-500"></i>
+                        <span>Pending / Production</span>
+                        <span id="tabBadgePending" class="ml-1 px-1.5 py-0.2 bg-amber-100 text-amber-700 rounded-full text-[10px]">0</span>
+                    </button>
+                    <button id="orderTabBtn-dispatch" onclick="ERP.setOrderTab('dispatch')" class="py-2.5 px-4 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-t-lg transition flex items-center space-x-1.5">
+                        <i class="fa-solid fa-truck text-emerald-600"></i>
+                        <span>Order Dispatch</span>
+                        <span id="tabBadgeDispatch" class="ml-1 px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full text-[10px]">0</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase font-extrabold border-b whitespace-nowrap">
+                                <th class="p-3.5">PO / Order #</th>
+                                <th class="p-3.5">Date</th>
+                                <th class="p-3.5">Company & Variety</th>
+                                <th class="p-3.5 text-center">Dimensions</th>
+                                <th class="p-3.5 text-right">Quantity</th>
+                                <th class="p-3.5 text-right">Unit Price</th>
+                                <th class="p-3.5 text-right">Total Amount</th>
+                                <th class="p-3.5 text-center">Status</th>
+                                <th class="p-3.5 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 1: ADD COMPANY -->
+        <section id="view-companies" class="view-content hidden flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="border-b border-slate-100 pb-4 mb-6 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Add Company</h2>
+                        <p class="text-sm text-slate-500">Register manufacturing clients and packaging suppliers</p>
+                    </div>
+                </div>
+
+                <form id="companyForm" onsubmit="ERP.handleSaveCompany(event)" class="space-y-5 max-w-2xl">
+                    <input type="hidden" id="companyEditId" value="">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-6">
+                        <label for="companySrno" class="font-bold text-slate-800 text-sm sm:text-right">SRNO.</label>
+                        <div class="sm:col-span-3">
+                            <input type="text" id="companySrno" required placeholder="e.g. 101" 
+                                class="w-full sm:w-80 px-3.5 py-2.5 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-6">
+                        <label for="companyName" class="font-bold text-slate-800 text-sm sm:text-right">Company Name</label>
+                        <div class="sm:col-span-3">
+                            <input type="text" id="companyName" required placeholder="e.g. Morbi Ceramic Box Co." 
+                                class="w-full sm:w-96 px-3.5 py-2.5 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-semibold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 items-center gap-2 sm:gap-6 pt-2">
+                        <div class="hidden sm:block"></div>
+                        <div class="sm:col-span-3 flex items-center space-x-3">
+                            <button type="submit" id="saveCompanyBtn" 
+                                class="bg-black hover:bg-slate-800 text-white font-bold px-10 py-2.5 rounded-md shadow transition active:scale-95 flex items-center space-x-2">
+                                <span id="companySubmitLabel">save</span>
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </button>
+                            <button type="button" id="cancelCompanyEditBtn" onclick="ERP.resetCompanyForm()" class="hidden px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-100 transition text-sm font-semibold">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Directory -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-table-list text-brandRed"></i>
+                        <span>Registered Companies Directory</span>
+                    </h3>
+                    <span id="companyTableCount" class="text-xs font-bold px-2.5 py-1 bg-red-50 text-brandRed rounded-full border border-red-200">0 records</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase font-extrabold border-b">
+                                <th class="p-3">SRNO.</th>
+                                <th class="p-3">Company Name</th>
+                                <th class="p-3">Registered Varieties</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="companyTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: ADD NEW BOX SIZE -->
+        <section id="view-addBox" class="view-content hidden flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="border-b border-slate-100 pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Add New Box Size</h2>
+                        <p class="text-sm text-slate-500">Corrugated manufacturing specifications, Deckle, Cutting, and Artwork Attachments</p>
+                    </div>
+                    <span class="text-xs font-bold px-3 py-1 bg-red-50 text-brandRed border border-red-200 rounded-full w-fit">
+                        Form #2: Technical Box Specs
+                    </span>
+                </div>
+
+                <form id="boxForm" onsubmit="ERP.handleSaveBox(event)" class="space-y-6 max-w-4xl">
+                    <input type="hidden" id="boxEditId" value="">
+
+                    <!-- Row 1: SR NO. & Dynamic Company Dropdown -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col space-y-1.5">
+                            <label for="boxSrno" class="font-bold text-slate-800 text-sm">SR NO. <span class="text-red-500">*</span></label>
+                            <input type="text" id="boxSrno" required placeholder="e.g. 1" 
+                                class="w-full px-3.5 py-2.5 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-bold">
+                        </div>
+
+                        <div class="flex flex-col space-y-1.5">
+                            <label for="boxCompanyName" class="font-bold text-slate-800 text-sm">COMPANY NAME <span class="text-red-500">*</span></label>
+                            <div class="relative">
+                                <select id="boxCompanyName" required 
+                                    class="appearance-none w-full px-3.5 py-2.5 pr-10 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-medium cursor-pointer">
+                                    <option value="" disabled selected>-- Select Company --</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-900">
+                                    <i class="fa-solid fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: BOX NAME & BOX TYPE -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col space-y-1.5">
+                            <label for="boxName" class="font-bold text-slate-800 text-sm">BOX NAME <span class="text-red-500">*</span></label>
+                            <input type="text" id="boxName" required placeholder="e.g. 600x1200 Porcelain Carton" 
+                                class="w-full px-3.5 py-2.5 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-medium">
+                        </div>
+
+                        <div class="flex flex-col space-y-1.5">
+                            <label for="boxType" class="font-bold text-slate-800 text-sm">BOX TYPE</label>
+                            <input type="text" id="boxType" placeholder="e.g. Master Carton, Mono Carton, Die Cut..." 
+                                class="w-full px-3.5 py-2.5 bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Dimensions Group -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-ruler-combined text-brandRed"></i>
+                                Box Dimensions (L × W × H)
+                            </span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-500">Unit:</span>
+                                <select id="boxUnit" onchange="ERP.autoCalculateCorrugationSpecs()" class="px-2.5 py-1 bg-white border border-slate-300 rounded font-semibold text-xs outline-none cursor-pointer">
+                                    <option value="inch" selected>inch</option>
+                                    <option value="mm">mm</option>
+                                    <option value="cm">cm</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="flex flex-col space-y-1">
+                                <span class="text-xs font-bold text-slate-700">Length (L)</span>
+                                <input type="number" step="0.01" min="0" id="boxLength" oninput="ERP.autoCalculateCorrugationSpecs()" required placeholder="0.00" 
+                                    class="w-full px-3 py-2 text-center bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-bold text-base">
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <span class="text-xs font-bold text-slate-700">Width (W)</span>
+                                <input type="number" step="0.01" min="0" id="boxWidth" oninput="ERP.autoCalculateCorrugationSpecs()" required placeholder="0.00" 
+                                    class="w-full px-3 py-2 text-center bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-bold text-base">
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <span class="text-xs font-bold text-slate-700">Height (H)</span>
+                                <input type="number" step="0.01" min="0" id="boxHeight" oninput="ERP.autoCalculateCorrugationSpecs()" required placeholder="0.00" 
+                                    class="w-full px-3 py-2 text-center bg-white text-slate-900 border-2 border-slate-900 rounded-md focus:ring-2 focus:ring-brandRed outline-none font-bold text-base">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Manufacturing Specifications -->
+                    <div class="border-2 border-slate-900 rounded-xl p-4 md:p-5 bg-white space-y-4">
+                        <div class="flex items-center justify-between border-b pb-2">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-industry text-brandRed"></i>
+                                Manufacturing Specifications & Parameters
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
+                            <div class="flex flex-col space-y-1">
+                                <label for="boxPly" class="text-xs font-bold text-slate-700">NO. OF PLY</label>
+                                <select id="boxPly" class="w-full px-2 py-2 text-center bg-slate-50 text-slate-900 border border-slate-400 rounded-md focus:border-brandRed outline-none font-semibold text-sm cursor-pointer">
+                                    <option value="3 Ply">3 Ply</option>
+                                    <option value="5 Ply" selected>5 Ply</option>
+                                    <option value="7 Ply">7 Ply</option>
+                                    <option value="9 Ply">9 Ply</option>
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <label for="boxDackle" class="text-xs font-bold text-slate-700">DACKLE</label>
+                                <input type="number" step="0.01" min="0" id="boxDackle" placeholder="39" 
+                                    class="w-full px-2.5 py-2 text-center bg-slate-50 text-slate-900 border border-slate-400 rounded-md focus:border-brandRed outline-none font-semibold text-sm">
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <label for="boxCutting" class="text-xs font-bold text-slate-700">CUTTING</label>
+                                <input type="number" step="0.01" min="0" id="boxCutting" placeholder="41.75" 
+                                    class="w-full px-2.5 py-2 text-center bg-slate-50 text-slate-900 border border-slate-400 rounded-md focus:border-brandRed outline-none font-semibold text-sm">
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <label for="boxInSheet" class="text-xs font-bold text-slate-700">BOX IN SHEET</label>
+                                <input type="number" min="0.1" step="any" id="boxInSheet" value="0.5" placeholder="0.5" 
+                                    class="w-full px-2.5 py-2 text-center bg-slate-50 text-slate-900 border border-slate-400 rounded-md focus:border-brandRed outline-none font-semibold text-sm">
+                            </div>
+
+                            <div class="flex flex-col space-y-1">
+                                <label for="boxWeight" class="text-xs font-bold text-slate-700">WEIGHT</label>
+                                <div class="flex">
+                                    <input type="number" step="0.001" min="0" id="boxWeight" placeholder="492" 
+                                        class="w-full px-2 py-2 text-center bg-slate-50 text-slate-900 border border-slate-400 rounded-l-md focus:border-brandRed outline-none font-semibold text-sm">
+                                    <select id="weightUnit" class="bg-slate-200 border-y border-r border-slate-400 rounded-r-md px-1 text-xs font-bold">
+                                        <option value="g" selected>g</option>
+                                        <option value="kg">kg</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: SPECIFICATIONS OF MATERIAL -->
+                    <div class="border-2 border-amber-400 rounded-xl p-4 md:p-5 bg-amber-50/40 space-y-3.5 shadow-sm">
+                        <div class="flex items-center justify-between border-b border-amber-200/80 pb-2">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group text-amber-600"></i>
+                                Specifications of Material
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="flex flex-col space-y-1.5 bg-white p-3 rounded-lg border border-amber-200">
+                                <label for="boxTopPaper" class="text-xs font-extrabold text-slate-800">Top paper</label>
+                                <input type="text" id="boxTopPaper" placeholder="e.g. 180 GSM Kraft / Duplex" 
+                                    class="w-full px-3 py-2 bg-slate-50 text-slate-900 border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed focus:bg-white outline-none font-semibold text-sm">
+                            </div>
+
+                            <div class="flex flex-col space-y-1.5 bg-white p-3 rounded-lg border border-amber-200">
+                                <label for="boxFlutePaper" class="text-xs font-extrabold text-slate-800">Flute paper</label>
+                                <input type="text" id="boxFlutePaper" placeholder="e.g. 140 GSM Fluting / B Flute" 
+                                    class="w-full px-3 py-2 bg-slate-50 text-slate-900 border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed focus:bg-white outline-none font-semibold text-sm">
+                            </div>
+
+                            <div class="flex flex-col space-y-1.5 bg-white p-3 rounded-lg border border-amber-200">
+                                <label for="boxBottomPaper" class="text-xs font-extrabold text-slate-800">Bottom paper</label>
+                                <input type="text" id="boxBottomPaper" placeholder="e.g. 150 GSM Kraft Liner" 
+                                    class="w-full px-3 py-2 bg-slate-50 text-slate-900 border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed focus:bg-white outline-none font-semibold text-sm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 6: DIE DRAWING & PRINTING PROOF UPLOADS -->
+                    <div class="border-2 border-slate-300 rounded-xl p-4 md:p-5 bg-slate-50 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-paperclip text-brandRed"></i>
+                                Die Drawing & Printing Proof Uploads
+                            </span>
+                            <span class="text-[11px] text-slate-500 font-bold bg-white px-2 py-0.5 rounded border">Supports JPEG & PDF</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Die Drawing Upload Button -->
+                            <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm flex flex-col space-y-2">
+                                <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-vector-square text-blue-600"></i>
+                                    <span>Die Drawing File</span>
+                                    <span class="text-[10px] text-slate-400 font-normal">(.jpeg, .pdf)</span>
+                                </label>
+                                <input 
+                                    type="file" 
+                                    id="boxDieDrawing" 
+                                    accept=".jpg, .jpeg, .pdf, image/jpeg, application/pdf"
+                                    class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                                >
+                            </div>
+
+                            <!-- Printing Proof Upload Button -->
+                            <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-sm flex flex-col space-y-2">
+                                <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-image text-emerald-600"></i>
+                                    <span>Printing Proof File</span>
+                                    <span class="text-[10px] text-slate-400 font-normal">(.jpeg, .pdf)</span>
+                                </label>
+                                <input 
+                                    type="file" 
+                                    id="boxPrintingProof" 
+                                    accept=".jpg, .jpeg, .pdf, image/jpeg, application/pdf"
+                                    class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button type="submit" id="saveBoxBtn" 
+                            class="bg-black hover:bg-slate-800 text-white font-bold px-10 py-2.5 rounded-md shadow transition active:scale-95 flex items-center space-x-2">
+                            <span id="boxSubmitLabel">save</span>
+                            <i class="fa-solid fa-check text-xs"></i>
+                        </button>
+                        <button type="button" id="cancelBoxEditBtn" onclick="ERP.resetBoxForm()" class="hidden px-4 py-2 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-100 transition text-sm font-semibold">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: SEARCH BOX SIZE -->
+        <section id="view-searchBox" class="view-content hidden flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Search Box Size</h2>
+                        <p class="text-sm text-slate-500">Query technical specifications, inspect attached drawings, and open job cards</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="ERP.exportBoxesToCSV()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center space-x-1.5 shadow-sm transition">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export CSV</span>
+                        </button>
+                        <button onclick="window.print()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg flex items-center space-x-1.5 border border-slate-300 transition">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Print Table</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Query Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600">Keyword Search</label>
+                        <input type="text" id="filterKeyword" oninput="ERP.applyBoxFilters()" placeholder="Box name, type, or SR NO..." 
+                            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed outline-none">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600">Filter by Company</label>
+                        <select id="filterCompany" onchange="ERP.applyBoxFilters()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed outline-none bg-white font-medium cursor-pointer">
+                            <option value="">All Companies</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-600">Min Length</label>
+                        <input type="number" id="filterMinLength" oninput="ERP.applyBoxFilters()" placeholder="Min L" 
+                            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:ring-2 focus:ring-brandRed outline-none">
+                    </div>
+
+                    <div class="space-y-1 flex flex-col justify-end">
+                        <button onclick="ERP.resetBoxFilters()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-md border border-slate-200 transition">
+                            Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table of Results -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center text-sm">
+                    <span id="filteredResultsBadge" class="bg-brandRed text-white text-xs font-bold px-2.5 py-0.5 rounded-full">0 matches</span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse" id="mainResultsTable">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 text-[11px] uppercase tracking-wider font-extrabold border-b border-slate-200 whitespace-nowrap">
+                                <th class="p-3">SR NO.</th>
+                                <th class="p-3">BOX NAME</th>
+                                <th class="p-3">BOX TYPE</th>
+                                <th class="p-3">COMPANY</th>
+                                <th class="p-3">L × W × H</th>
+                                <th class="p-3">PLY</th>
+                                <th class="p-3">DACKLE</th>
+                                <th class="p-3">CUTTING</th>
+                                <th class="p-3">UPS</th>
+                                <th class="p-3">WEIGHT</th>
+                                <th class="p-3 text-center">ATTACHMENTS</th>
+                                <th class="p-3 text-right">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="searchTableBody" class="divide-y divide-slate-100 text-xs text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: BOX PRICE (COSTING SHEET) -->
+        <section id="view-boxPrice" class="view-content hidden flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 bg-yellow-400 text-black text-xs font-black rounded uppercase">Excel Synchronized</span>
+                            <h2 class="text-2xl font-black text-slate-900 tracking-tight">Box Price Costing Sheet</h2>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <button onclick="ERP.openFinalCopyModal()" class="px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 text-white font-extrabold text-xs rounded-lg shadow-md flex items-center space-x-2 transition active:scale-95 border border-red-500">
+                            <i class="fa-solid fa-file-invoice-dollar text-yellow-300"></i>
+                            <span>Final copy after all charges</span>
+                        </button>
+                        <button onclick="window.print()" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg border border-slate-300 flex items-center space-x-1.5 transition">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Print</span>
+                        </button>
+                        <div class="flex items-center bg-slate-50 border-2 border-slate-900 rounded-lg px-2.5 py-1 space-x-1.5">
+                            <span class="text-xs font-black text-slate-900 uppercase">Date:</span>
+                            <input type="date" id="costingDate" class="bg-transparent font-bold text-xs text-slate-900 outline-none cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selectors -->
+                <div class="bg-slate-50 p-4 rounded-xl border-2 border-slate-800 space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center">
+                        <div class="md:col-span-6 flex flex-col space-y-1">
+                            <label for="costingCompanyInput" class="text-xs font-black text-slate-900 uppercase">1. Company Quick Search</label>
+                            <input type="text" id="costingCompanyInput" list="costingCompanyDatalist" 
+                                placeholder="Type company name..." 
+                                oninput="ERP.handleCostingCompanyInput(this.value)"
+                                class="w-full px-3.5 py-2 bg-white text-slate-900 border-2 border-slate-900 rounded-md font-bold text-sm outline-none">
+                            <datalist id="costingCompanyDatalist"></datalist>
+                        </div>
+
+                        <div class="md:col-span-6 flex flex-col space-y-1">
+                            <label for="costingBoxPicker" class="text-xs font-black text-slate-900 uppercase">2. Select Box Size</label>
+                            <select id="costingBoxPicker" onchange="ERP.handleCostingBoxChange(this.value)" 
+                                class="w-full px-3.5 py-2 text-xs font-bold bg-white text-slate-900 border-2 border-slate-900 rounded-md outline-none cursor-pointer">
+                                <option value="">-- Select Box to Load Specifications --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPREADSHEET -->
+                <div class="overflow-x-auto bg-white border-2 border-slate-800 rounded-lg shadow-sm">
+                    <table class="w-full border-collapse font-sans text-sm">
+                        <thead>
+                            <tr class="bg-slate-200 text-slate-600 text-[11px] font-mono border-b border-slate-300">
+                                <th class="excel-cell text-center w-12">#</th>
+                                <th class="excel-cell text-left">PAPER / ITEM</th>
+                                <th class="excel-cell text-center text-red-600">DACKLE</th>
+                                <th class="excel-cell text-center text-red-600">CUTTING</th>
+                                <th class="excel-cell text-center">CONST</th>
+                                <th class="excel-cell text-center text-red-600">GSM</th>
+                                <th class="excel-cell text-center">DIV</th>
+                                <th class="excel-cell text-center text-red-600">RATE/KG</th>
+                                <th class="excel-cell text-center">PAPER COST</th>
+                                <th class="excel-cell text-center">WT (g)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <tr>
+                                <td class="excel-cell text-center font-mono text-xs text-slate-400">3</td>
+                                <td class="excel-cell font-bold text-slate-900">DUPLEX</td>
+                                <td class="excel-cell"><input type="number" id="c_duplex_dackle" value="39" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell"><input type="number" id="c_duplex_cutting" value="41.75" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono">1550</td>
+                                <td class="excel-cell"><input type="number" id="c_duplex_gsm" value="180" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono">1000</td>
+                                <td class="excel-cell"><input type="number" id="c_duplex_rate" value="37" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono" id="c_duplex_cost">7.00</td>
+                                <td class="excel-cell costing-fixed-black font-mono" id="c_duplex_weight">189</td>
+                            </tr>
+                            <tr>
+                                <td class="excel-cell text-center font-mono text-xs text-slate-400">4</td>
+                                <td class="excel-cell font-bold text-slate-900">CRAFT</td>
+                                <td class="excel-cell"><input type="number" id="c_craft_dackle" value="39" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell"><input type="number" id="c_craft_cutting" value="41.75" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono">1550</td>
+                                <td class="excel-cell"><input type="number" id="c_craft_gsm" value="720" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono">1000</td>
+                                <td class="excel-cell"><input type="number" id="c_craft_rate" value="36" step="any" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-20 py-1 font-bold text-sm"></td>
+                                <td class="excel-cell costing-fixed-black font-mono" id="c_craft_cost">27.23</td>
+                                <td class="excel-cell costing-fixed-black font-mono" id="c_craft_weight">756</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Parameters & Total -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="border-2 border-slate-900 rounded-lg p-4 bg-white shadow-sm flex items-center justify-between">
+                            <span class="font-extrabold text-slate-900 text-sm">LAMINATION</span>
+                            <input type="number" step="0.01" id="c_lamination" value="4.86" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-24 py-1 font-mono text-base">
+                        </div>
+
+                        <div class="border-2 border-slate-900 rounded-lg p-4 bg-white shadow-sm flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-500 uppercase">TOTAL FINISHED WEIGHT</span>
+                            <div class="bg-yellow-400 border-2 border-slate-900 px-6 py-2 rounded">
+                                <span class="text-3xl font-black text-slate-950 font-mono" id="c_total_weight">492</span>
+                                <span class="text-xs font-bold text-slate-800 ml-1">g</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="border-2 border-slate-900 rounded-lg overflow-hidden bg-white shadow-sm">
+                            <div class="divide-y divide-slate-200 text-sm">
+                                <div class="flex items-center justify-between px-4 py-2">
+                                    <span class="font-bold text-slate-700">PRINT</span>
+                                    <input type="number" step="any" id="c_print" value="1" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-32 py-1">
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2">
+                                    <span class="font-bold text-slate-700">LABER</span>
+                                    <input type="number" step="any" id="c_laber" value="3.6" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-32 py-1">
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2">
+                                    <span class="font-bold text-slate-700">EXTRA</span>
+                                    <input type="number" step="any" id="c_extra" value="5" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-32 py-1">
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2 bg-slate-50">
+                                    <span class="font-extrabold text-slate-900">TOTAL SHEET COST</span>
+                                    <span id="c_total_sheet" class="costing-fixed-black font-mono text-base">43.82</span>
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2">
+                                    <span class="font-bold text-slate-700">PER SHEET BOX (Ups)</span>
+                                    <input type="number" step="any" min="0.1" id="c_sheet_box" value="0.5" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-32 py-1">
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2 bg-slate-50">
+                                    <span class="font-extrabold text-slate-900">PER BOX PRISE</span>
+                                    <span id="c_per_box_price" class="costing-fixed-black font-mono text-base">87.65</span>
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-2">
+                                    <span class="font-bold text-slate-700">MARGIN (%)</span>
+                                    <input type="number" step="any" id="c_margin_pct" value="15" oninput="ERP.calculateBoxPrice()" class="costing-input-red w-32 py-1">
+                                </div>
+                                <div class="flex items-center justify-between px-4 py-3 bg-yellow-400 border-t-2 border-slate-900">
+                                    <span class="font-black text-slate-950 text-base">GRAND TOTAL</span>
+                                    <div>
+                                        <span class="text-2xl font-black text-slate-950 font-mono" id="c_grand_total">100.80</span>
+                                        <span class="text-xs font-bold text-slate-900">₹ / Unit</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center gap-4 pt-1">
+                            <button type="button" onclick="ERP.saveCostingAsPDF()" class="btn-outline-red w-full sm:w-1/2 py-3 px-6 text-center text-base flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-file-pdf text-lg"></i>
+                                <span>SAVE PDF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5A: PAPER IN (PURCHASE ENTRY) -->
+        <section id="view-paperIn" class="view-content hidden flex flex-col space-y-5">
+            <div class="bg-[#dcfce7] rounded-xl border-2 border-emerald-700 p-6 md:p-8 max-w-4xl mx-auto w-full shadow-lg">
+                <div class="flex items-center justify-between pb-3 border-b-2 border-emerald-700/60 mb-5">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-file-invoice text-emerald-800 text-xl"></i>
+                        <h2 class="text-2xl font-black text-emerald-950 tracking-wide">Paper Purchase (Paper IN)</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="ERP.resetPaperInForm()" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-700 font-bold text-xs rounded shadow-xs">New</button>
+                        <button type="button" onclick="ERP.switchTab('paperStock')" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-700 font-bold text-xs rounded shadow-xs">Find</button>
+                        <button type="button" onclick="document.getElementById('paperInForm').requestSubmit()" class="px-4 py-1 bg-emerald-800 text-white hover:bg-emerald-900 font-black text-xs rounded shadow">Save</button>
+                        <button type="button" onclick="ERP.resetPaperInForm()" class="px-3 py-1 bg-white hover:bg-slate-100 border border-slate-700 font-bold text-xs rounded shadow-xs">Cancel</button>
+                        <button type="button" onclick="ERP.switchTab('dashboard')" class="px-3 py-1 bg-rose-700 text-white font-bold text-xs rounded shadow-xs">Close</button>
+                    </div>
+                </div>
+
+                <form id="paperInForm" onsubmit="ERP.handleSavePaperIn(event)" class="space-y-4 bg-white/70 p-5 rounded-lg border border-emerald-600/40">
+                    <input type="hidden" id="paperInEditId" value="">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div class="flex items-center space-x-3">
+                            <label class="w-28 text-xs font-bold text-slate-800 text-right">Date</label>
+                            <input type="date" id="in_date" required class="legacy-field w-44 rounded">
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="w-28 text-xs font-bold text-slate-800 text-right">ReelNo</label>
+                            <input type="text" id="in_reelNo" required placeholder="e.g. C3, B35" class="legacy-field w-40 font-mono font-bold uppercase rounded">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="w-28 text-xs font-bold text-slate-800 text-right">Paper Name <span class="text-rose-600 font-black">***</span></label>
+                        <div class="flex-1 flex items-center space-x-2">
+                            <select id="in_paperName" required class="legacy-field flex-1 rounded bg-white"></select>
+                            <button type="button" onclick="ERP.switchTab('paperMaster')" class="px-2 py-1 bg-purple-700 text-white rounded text-xs" title="Add New Paper Variety"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="w-28 text-xs font-bold text-slate-800 text-right">Mill Name</label>
+                        <div class="flex-1 flex items-center space-x-2">
+                            <select id="in_millName" required class="legacy-field flex-1 rounded bg-white"></select>
+                            <button type="button" onclick="ERP.switchTab('millMaster')" class="px-2 py-1 bg-amber-700 text-white rounded text-xs" title="Add New Mill"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div class="flex items-center space-x-3">
+                            <label class="w-28 text-xs font-bold text-slate-800 text-right">Shade</label>
+                            <div class="flex-1 flex items-center space-x-2">
+                                <select id="in_shade" required class="legacy-field flex-1 rounded bg-white"></select>
+                                <button type="button" onclick="ERP.switchTab('shadeMaster')" class="px-2 py-1 bg-pink-700 text-white rounded text-xs" title="Add Shade"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="w-24 text-xs font-bold text-slate-800 text-right">Rate/Kg</label>
+                            <input type="number" step="0.01" id="in_rate" required placeholder="0.00" class="legacy-field w-36 rounded font-mono font-bold">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div class="flex items-center space-x-3">
+                            <label class="w-28 text-xs font-bold text-slate-800 text-right">Remark</label>
+                            <input type="text" id="in_remark" placeholder="Optional notes / Lot no" class="legacy-field flex-1 rounded">
+                        </div>
+                        <div class="flex items-center space-x-4 pl-8">
+                            <span class="text-xs font-bold text-slate-800">Quality:</span>
+                            <label class="inline-flex items-center text-xs font-semibold cursor-pointer">
+                                <input type="radio" name="in_quality" value="Hold" class="text-amber-600 focus:ring-0">
+                                <span class="ml-1 text-slate-700">Hold</span>
+                            </label>
+                            <label class="inline-flex items-center text-xs font-bold text-emerald-800 cursor-pointer">
+                                <input type="radio" name="in_quality" value="OK" checked class="text-emerald-600 focus:ring-0">
+                                <span class="ml-1 text-emerald-800">OK</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="w-28 text-xs font-bold text-slate-800 text-right">Store Zone</label>
+                        <input type="text" id="in_storeZone" value="A" placeholder="e.g. Zone A / Bay 1" class="legacy-field w-40 font-bold uppercase rounded">
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="w-28 text-xs font-bold text-slate-800 text-right">Quantity</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" step="1" id="in_weight" required placeholder="e.g. 450" class="legacy-field w-44 font-mono font-black text-base text-slate-900 rounded">
+                            <span class="text-xs font-bold text-slate-700">Kg</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <label class="w-28 text-xs font-bold text-slate-800 text-right">Mill Reel No</label>
+                        <input type="text" id="in_millReelNo" placeholder="Paper Mill Stamped Reel #" class="legacy-field w-64 rounded">
+                    </div>
+
+                    <div class="pt-3 flex justify-end">
+                        <button type="submit" class="px-8 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold text-sm rounded shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-save"></i> Save Inward Paper Reel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- SCREEN 5B: PAPER OUT (CONSUMPTION ENTRY) -->
+        <section id="view-paperOut" class="view-content hidden flex flex-col space-y-5">
+            <div class="bg-[#ffedd5] rounded-xl border-2 border-orange-600 p-6 md:p-8 max-w-5xl mx-auto w-full shadow-lg">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b-2 border-orange-500/50 gap-2 mb-4">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-dolly text-orange-700 text-xl"></i>
+                        <h2 class="text-2xl font-black text-orange-950 tracking-wide">Paper OUT (Reel Consumption)</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="bg-white px-3 py-1 rounded border border-orange-400 font-mono text-xs font-black text-orange-800">
+                            Total = <span id="out_total_kg_badge">0</span> Kg
+                        </div>
+                        <button onclick="ERP.switchTab('dashboard')" class="px-3 py-1 bg-slate-800 text-white font-bold text-xs rounded">Close</button>
+                    </div>
+                </div>
+
+                <form id="paperOutForm" onsubmit="ERP.handleProcessPaperOut(event)" class="bg-white/80 p-4 rounded-lg border border-orange-300 space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <label class="w-20 text-xs font-bold text-slate-800 text-right">Date</label>
+                            <input type="date" id="out_date" required class="legacy-field w-full rounded">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label class="w-20 text-xs font-bold text-slate-800 text-right">Reel No</label>
+                            <select id="out_select_reel" onchange="ERP.handleSelectReelForOut(this.value)" required class="legacy-field w-full rounded bg-white font-mono font-bold">
+                                <option value="">-- Choose Stock Reel --</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label class="w-20 text-xs font-bold text-slate-800 text-right">Out (Kg)</label>
+                            <input type="number" step="1" id="out_qty" oninput="ERP.calcOutBalance()" required placeholder="Weight to consume" class="legacy-field w-full rounded font-mono font-black text-rose-600">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="flex items-center space-x-2">
+                            <label class="w-20 text-xs font-bold text-slate-800 text-right">Balance (Kg)</label>
+                            <input type="text" id="out_balance" readonly class="legacy-field w-full rounded bg-slate-100 font-mono font-bold text-slate-700">
+                        </div>
+                        <div class="sm:col-span-2 flex items-center space-x-2">
+                            <label class="w-20 text-xs font-bold text-slate-800 text-right">Remark</label>
+                            <input type="text" id="out_remark" placeholder="e.g. Job #104, Top liner corrugation" class="legacy-field flex-1 rounded">
+                            <button type="submit" class="px-6 py-1.5 bg-orange-700 hover:bg-orange-800 text-white font-black text-xs rounded shadow">
+                                <i class="fa-solid fa-arrow-up-from-bracket"></i> OUT
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Outward Log -->
+                <div class="mt-4 bg-white rounded-lg border border-orange-300 overflow-hidden shadow-sm">
+                    <div class="p-2.5 bg-orange-100/70 border-b border-orange-200 flex justify-between items-center text-xs font-bold text-orange-950">
+                        <span>Issued / Outward Reel Log</span>
+                        <span id="outLogCount">0 Dispatches</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-72 overflow-y-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 uppercase font-black border-b sticky top-0">
+                                    <th class="p-2">R.No</th>
+                                    <th class="p-2">Date</th>
+                                    <th class="p-2">Paper Name</th>
+                                    <th class="p-2 text-right">Issued Qty</th>
+                                    <th class="p-2">Mill Name</th>
+                                    <th class="p-2">Shade</th>
+                                    <th class="p-2">Rem.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paperOutTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5C: PAPER STOCK IN STORE -->
+        <section id="view-paperStock" class="view-content hidden flex flex-col space-y-4">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b pb-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 bg-emerald-600 text-white text-xs font-black rounded uppercase">Inventory</span>
+                            <h2 class="text-xl font-black text-slate-900">Check Paper in Store (Paper Stock)</h2>
+                        </div>
+                        <div class="mt-1 flex flex-wrap gap-x-4 text-xs font-bold text-slate-700">
+                            <span>Total = <strong id="stockMetricTotalTon" class="text-emerald-700 font-mono">0.000 Ton</strong> (<span id="stockMetricReelCount">0</span> reels)</span>
+                            <span>Total Cost = <strong id="stockMetricCost" class="text-brandRed font-mono">₹0.00</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="ERP.exportStockToCSV()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button onclick="ERP.switchTab('paperIn')" class="px-3 py-1.5 bg-brandRed hover:bg-brandRedDark text-white text-xs font-bold rounded shadow-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> Inward Reel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-0.5">ReelNo</label>
+                        <input type="text" id="filterStockReel" oninput="ERP.applyStockFilters()" placeholder="Search Reel#" class="w-full px-2 py-1 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-0.5">Paper Name</label>
+                        <input type="text" id="filterStockPaper" oninput="ERP.applyStockFilters()" placeholder="Size / GSM" class="w-full px-2 py-1 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-0.5">Mill Name</label>
+                        <input type="text" id="filterStockMill" oninput="ERP.applyStockFilters()" placeholder="Mill Name" class="w-full px-2 py-1 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-0.5">Shade</label>
+                        <input type="text" id="filterStockShade" oninput="ERP.applyStockFilters()" placeholder="Shade" class="w-full px-2 py-1 border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-0.5">Zone</label>
+                        <input type="text" id="filterStockZone" oninput="ERP.applyStockFilters()" placeholder="Zone" class="w-full px-2 py-1 border rounded bg-white">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="ERP.resetStockFilters()" class="w-full py-1 bg-slate-200 hover:bg-slate-300 font-bold rounded text-slate-700">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Store Grid -->
+                <div class="overflow-x-auto border border-slate-200 rounded-lg max-h-[500px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase font-extrabold border-b sticky top-0 whitespace-nowrap">
+                                <th class="p-2.5">R.No</th>
+                                <th class="p-2.5">Zone</th>
+                                <th class="p-2.5">Paper Name</th>
+                                <th class="p-2.5 text-right">Weight (Kg)</th>
+                                <th class="p-2.5">Mill Name</th>
+                                <th class="p-2.5">Shade</th>
+                                <th class="p-2.5">Remark</th>
+                                <th class="p-2.5 text-center">Days</th>
+                                <th class="p-2.5">Mill R.N.</th>
+                                <th class="p-2.5 text-right">Rate</th>
+                                <th class="p-2.5 text-right">Amt (₹)</th>
+                                <th class="p-2.5 text-center">Status</th>
+                                <th class="p-2.5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody" class="divide-y divide-slate-100 text-slate-800"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5D: PAPER MASTER -->
+        <section id="view-paperMaster" class="view-content hidden flex flex-col space-y-5">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900">Paper Master</h2>
+                        <p class="text-xs text-slate-500">Add paper dimension specifications (e.g., 48/120/16, 27/150/18)</p>
+                    </div>
+                    <span id="paperMasterCount" class="text-xs font-bold px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full">0 varieties</span>
+                </div>
+
+                <form onsubmit="ERP.handleSavePaperMaster(event)" class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="newPaperName" required placeholder="e.g. 48/120/16 or Duplex 230" class="legacy-field flex-1 rounded">
+                        <button type="submit" class="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs rounded">Add Paper</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 border rounded-lg overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 font-bold border-b">
+                            <tr><th class="p-2.5">Paper Name / Variety</th><th class="p-2.5 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="paperMasterListBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5E: MILL MASTER -->
+        <section id="view-millMaster" class="view-content hidden flex flex-col space-y-5">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900">Mill Master</h2>
+                        <p class="text-xs text-slate-500">Register paper supplier mills (e.g. NEXA PAPER, APOLLO PAPER)</p>
+                    </div>
+                    <span id="millMasterCount" class="text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-full">0 mills</span>
+                </div>
+
+                <form onsubmit="ERP.handleSaveMillMaster(event)" class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="newMillName" required placeholder="e.g. NEXA PAPER MILLS" class="legacy-field flex-1 rounded">
+                        <button type="submit" class="px-5 py-2 bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs rounded">Add Mill</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 border rounded-lg overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 font-bold border-b">
+                            <tr><th class="p-2.5">Mill Name</th><th class="p-2.5 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="millMasterListBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5F: SHADE MASTER -->
+        <section id="view-shadeMaster" class="view-content hidden flex flex-col space-y-5">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full">
+                <div class="border-b pb-3 mb-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900">Shade Master</h2>
+                        <p class="text-xs text-slate-500">Manage paper tones and color grades (e.g. Golden, AP GO, LWC)</p>
+                    </div>
+                    <span id="shadeMasterCount" class="text-xs font-bold px-2 py-0.5 bg-pink-50 text-pink-700 border border-pink-200 rounded-full">0 shades</span>
+                </div>
+
+                <form onsubmit="ERP.handleSaveShadeMaster(event)" class="space-y-3">
+                    <div class="flex gap-2">
+                        <input type="text" id="newShadeName" required placeholder="e.g. Golden Yellow / Natural Kraft" class="legacy-field flex-1 rounded">
+                        <button type="submit" class="px-5 py-2 bg-pink-700 hover:bg-pink-800 text-white font-bold text-xs rounded">Add Shade</button>
+                    </div>
+                </form>
+
+                <div class="mt-4 border rounded-lg overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 font-bold border-b">
+                            <tr><th class="p-2.5">Shade Grade</th><th class="p-2.5 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="shadeMasterListBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 6: ADMIN PANEL -->
+        <section id="view-adminPanel" class="view-content hidden flex flex-col space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8 space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h2 class="text-2xl font-black text-slate-900">Admin Control Center</h2>
+                    <p class="text-sm text-slate-500">Manage user roles and permissions</p>
+                </div>
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 uppercase font-extrabold border-b">
+                                <th class="p-3">User</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Role</th>
+                                <th class="p-3 text-right">Toggle Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUserTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODAL: PREVIEW JOB CARD WITH DOWNLOAD LINKS -->
+        <div id="fullPreviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-auto">
+                <div class="bg-brandRed text-white p-5 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg leading-tight">Box Specification Form</h3>
+                            <p class="text-xs text-red-200">Factory Job Card & Technical Parameters</p>
+                        </div>
+                    </div>
+                    <button onclick="ERP.closeFullPreview()" class="text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div id="printableSpecArea" class="p-6 md:p-8 space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-2">
+                        <div>
+                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-brandRed" id="modalCompanySrno">SRNO: 1</span>
+                            <h2 class="text-2xl font-black text-slate-900" id="modalBoxName">BOX NAME</h2>
+                            <p class="text-sm font-semibold text-slate-600" id="modalCompanyName">Company Name</p>
+                            <span class="inline-block mt-1 text-[11px] font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800" id="modalBoxType">Master Carton</span>
+                        </div>
+                        <div class="text-left sm:text-right">
+                            <span class="text-xs text-slate-400 block font-medium">Dimension Summary</span>
+                            <span class="text-base font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-md border inline-block mt-0.5" id="modalDimSummary">-</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="border-2 border-slate-900 rounded-lg p-3 text-center bg-slate-50">
+                            <span class="text-xs font-semibold text-slate-500 block">Length (L)</span>
+                            <span class="text-xl font-black text-slate-900" id="modalBoxLength">0</span>
+                        </div>
+                        <div class="border-2 border-slate-900 rounded-lg p-3 text-center bg-slate-50">
+                            <span class="text-xs font-semibold text-slate-500 block">Width (W)</span>
+                            <span class="text-xl font-black text-slate-900" id="modalBoxWidth">0</span>
+                        </div>
+                        <div class="border-2 border-slate-900 rounded-lg p-3 text-center bg-slate-50">
+                            <span class="text-xs font-semibold text-slate-500 block">Height (H)</span>
+                            <span class="text-xl font-black text-slate-900" id="modalBoxHeight">0</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                            <div class="p-2 bg-white rounded border border-slate-200">
+                                <span class="text-slate-500 block">NO. OF PLY</span>
+                                <strong class="text-sm text-brandRed" id="modalBoxPly">-</strong>
+                            </div>
+                            <div class="p-2 bg-white rounded border border-slate-200">
+                                <span class="text-slate-500 block">DACKLE</span>
+                                <strong class="text-sm text-slate-800" id="modalBoxDackle">-</strong>
+                            </div>
+                            <div class="p-2 bg-white rounded border border-slate-200">
+                                <span class="text-slate-500 block">CUTTING</span>
+                                <strong class="text-sm text-slate-800" id="modalBoxCutting">-</strong>
+                            </div>
+                            <div class="p-2 bg-white rounded border border-slate-200">
+                                <span class="text-slate-500 block">BOX IN SHEET</span>
+                                <strong class="text-sm text-slate-800" id="modalBoxInSheet">1</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50/70 rounded-xl p-4 border border-amber-300">
+                        <label class="text-xs font-bold text-amber-900 uppercase tracking-wider block mb-2">Specifications of Material</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div class="p-2 bg-white rounded border border-amber-200">
+                                <span class="text-[10px] font-bold text-slate-500 block">Top paper</span>
+                                <strong class="text-slate-900" id="modalBoxTopPaper">-</strong>
+                            </div>
+                            <div class="p-2 bg-white rounded border border-amber-200">
+                                <span class="text-[10px] font-bold text-slate-500 block">Flute paper</span>
+                                <strong class="text-slate-900" id="modalBoxFlutePaper">-</strong>
+                            </div>
+                            <div class="p-2 bg-white rounded border border-amber-200">
+                                <span class="text-[10px] font-bold text-slate-500 block">Bottom paper</span>
+                                <strong class="text-slate-900" id="modalBoxBottomPaper">-</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">Technical Attachments</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="modalAttachmentsArea">
+                            <div id="modalDieDrawingLink" class="p-2.5 bg-white border rounded text-xs text-slate-600">
+                                Die Drawing: <span class="text-slate-400 italic">None</span>
+                            </div>
+                            <div id="modalPrintingProofLink" class="p-2.5 bg-white border rounded text-xs text-slate-600">
+                                Printing Proof: <span class="text-slate-400 italic">None</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-100 px-6 py-4 border-t flex items-center justify-between">
+                    <button onclick="window.print()" class="px-4 py-2 bg-white border border-slate-300 rounded font-bold text-xs hover:bg-slate-50">
+                        <i class="fa-solid fa-print mr-1"></i> Print Job Card
+                    </button>
+                    <button onclick="ERP.closeFullPreview()" class="px-4 py-2 bg-slate-900 text-white rounded font-bold text-xs hover:bg-black">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: FINAL COSTING COPY -->
+        <div id="finalCopyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-auto">
+                <div class="bg-gradient-to-r from-red-700 to-red-800 text-white p-5 flex items-center justify-between">
+                    <h3 class="font-black text-lg">FINAL COSTING COPY</h3>
+                    <button onclick="ERP.closeFinalCopyModal()" class="text-white/80 hover:text-white p-2 rounded-full">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4 text-xs">
+                    <table class="w-full text-left border-collapse">
+                        <tbody class="divide-y divide-slate-100">
+                            <tr><td class="p-2.5">Duplex Paper Base</td><td class="p-2.5 text-right font-mono font-bold" id="final_val_duplex">₹0.00</td></tr>
+                            <tr><td class="p-2.5">Craft Fluting Base</td><td class="p-2.5 text-right font-mono font-bold" id="final_val_craft">₹0.00</td></tr>
+                            <tr><td class="p-2.5">Total Sheet Cost</td><td class="p-2.5 text-right font-mono font-bold" id="final_val_sheet_tot">₹0.00</td></tr>
+                            <tr><td class="p-2.5">Raw Per Box Price</td><td class="p-2.5 text-right font-mono font-bold" id="final_val_raw_unit">₹0.00</td></tr>
+                            <tr class="bg-yellow-300 text-black font-black text-sm"><td class="p-3">FINAL UNIT BOX PRICE</td><td class="p-3 text-right text-lg font-mono" id="final_val_grand_total">₹0.00</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: BOOK NEW ORDER -->
+        <div id="bookOrderModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-slate-200 overflow-hidden my-auto">
+                <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
+                    <h3 class="font-black text-base">Book Packaging Production Order</h3>
+                    <button onclick="ERP.closeBookOrderModal()" class="text-white/80 hover:text-white p-1 rounded-full"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+                <form id="orderBookingForm" onsubmit="ERP.handleSaveOrder(event)" class="p-6 space-y-4 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">PO / Order Ref</label>
+                            <input type="text" id="orderRefNo" required class="w-full px-3 py-2 border rounded font-bold">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">Order Date</label>
+                            <input type="date" id="orderDate" required class="w-full px-3 py-2 border rounded font-bold">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Select Registered Box Size</label>
+                        <select id="orderBoxSelect" required onchange="ERP.handleOrderBoxSelect(this.value)" class="w-full px-3 py-2 border rounded font-bold bg-white"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">Quantity</label>
+                            <input type="number" id="orderQty" min="1" value="1000" required oninput="ERP.calculateOrderTotal()" class="w-full px-3 py-2 border rounded font-bold">
+                        </div>
+                        <div>
+                            <label class="font-bold text-slate-700 block mb-1">Unit Price (₹)</label>
+                            <input type="number" step="0.01" id="orderUnitPrice" required oninput="ERP.calculateOrderTotal()" class="w-full px-3 py-2 border rounded font-bold">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="font-bold text-slate-700 block mb-1">Total Amount (₹)</label>
+                        <input type="text" id="orderTotalValuation" readonly class="w-full px-3 py-2 bg-yellow-100 border border-yellow-300 rounded font-black text-slate-900">
+                    </div>
+                    <div class="pt-2 flex justify-end space-x-2">
+                        <button type="button" onclick="ERP.closeBookOrderModal()" class="px-4 py-2 border rounded font-bold">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-brandRed text-white rounded font-bold hover:bg-brandRedDark">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL: DELIVERY CHALLAN -->
+        <div id="challanModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 md:p-6 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden my-auto p-6 space-y-4 text-xs">
+                <div class="flex justify-between border-b pb-3">
+                    <h2 class="text-xl font-black text-slate-900">DELIVERY CHALLAN</h2>
+                    <span id="ch_no" class="font-mono font-bold text-emerald-800"></span>
+                </div>
+                <div class="space-y-1">
+                    <p>Client: <strong id="ch_client">-</strong></p>
+                    <p>Box: <strong id="ch_boxname">-</strong></p>
+                    <p>Quantity: <strong id="ch_qty">-</strong></p>
+                </div>
+                <div class="flex justify-end pt-4">
+                    <button onclick="ERP.closeChallanModal()" class="px-4 py-2 bg-slate-900 text-white rounded font-bold">Close</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+/**
+ * Unified Box Manager & Raw Paper Reel Stock Engine
+ */
+(function() {
+    'use strict';
+
+    const DB_KEY = 'box_manager_erp_data_v8';
+
+    const defaultData = {
+        users: [
+            { id: 'u1', name: 'Pushpendra', email: 'admin@packaging.com', role: 'admin' }
+        ],
+        companies: [
+            { id: 'c1', srno: '101', name: 'Morbi Ceramic Box Co.' },
+            { id: 'c2', srno: '102', name: 'Prime Carton Industries' }
+        ],
+        boxes: [
+            {
+                id: 'b1',
+                srno: '1',
+                name: 'GVT 600x1200 Heavy Box',
+                boxType: 'Master Carton',
+                companyName: 'Morbi Ceramic Box Co.',
+                length: 48,
+                width: 24,
+                height: 12,
+                unit: 'inch',
+                ply: '5 Ply',
+                dackle: 39,
+                cutting: 41.75,
+                boxInSheet: 0.5,
+                weight: 492,
+                weightUnit: 'g',
+                topPaper: '180 GSM Kraft',
+                flutePaper: '140 GSM Fluting',
+                bottomPaper: '150 GSM Kraft',
+                dieDrawing: null,
+                printingProof: null
+            }
+        ],
+        orders: [],
+        currentOrderTab: 'received',
+        activeCosting: {},
+
+        // RAW REEL STOCK SPECIFICATIONS
+        paperMaster: ['48/120/16', '27/150/18', '42/180/18', '20/150/16', '46/150/16', '22/230/0', '49/180/18', '47/180/18', '44/180/18', '31/150/16', '43/150/16', '52/150/16', '28/180/18', '34.5/180/18', '29.5/150/16'],
+        millMaster: ['NEXA PAPER', 'APOLLO PAPER', 'SOHAM PAPER', 'SHREE AJIT PAPER', 'VISHAL PAPER'],
+        shadeMaster: ['Golden', 'AP GO', 'LWC', 'AG', 'Natural', 'White'],
+
+        reelsStock: [
+            { id: 'r1', reelNo: 'C3', zone: 'A', paperName: '48/120/16', weight: 349, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 170, millReelNo: 'NX-901', rate: 29.00, quality: 'OK', inDate: '2026-04-01' },
+            { id: 'r2', reelNo: 'B3*', zone: 'A', paperName: '27/150/18', weight: 197, millName: 'NEXA PAPER', shade: 'AP GO', remark: '-', days: 290, millReelNo: 'NX-410', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r3', reelNo: 'C4', zone: 'A', paperName: '42/180/18', weight: 591, millName: 'APOLLO PAPER', shade: 'AP GO', remark: '-', days: 170, millReelNo: 'AP-1022', rate: 31.00, quality: 'OK', inDate: '2026-04-01' },
+            { id: 'r4', reelNo: 'C5', zone: 'A', paperName: '42/180/18', weight: 670, millName: 'APOLLO PAPER', shade: 'AP GO', remark: '-', days: 170, millReelNo: 'AP-1024', rate: 31.00, quality: 'OK', inDate: '2026-04-01' },
+            { id: 'r5', reelNo: 'B19*', zone: 'A', paperName: '20/150/16', weight: 49, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-811', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r6', reelNo: 'B23', zone: 'A', paperName: '46/150/16', weight: 60, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-844', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r7', reelNo: 'C25*', zone: 'A', paperName: '22/230/0', weight: 135, millName: 'SOHAM PAPER', shade: 'LWC', remark: '-', days: 170, millReelNo: 'SH-55', rate: 45.00, quality: 'OK', inDate: '2026-04-01' },
+            { id: 'r8', reelNo: 'B25*', zone: 'A', paperName: '49/180/18', weight: 223, millName: 'SHREE AJIT PAPER', shade: 'AG', remark: '-', days: 290, millReelNo: 'SA-901', rate: 30.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r9', reelNo: 'B26', zone: 'A', paperName: '47/180/18', weight: 140, millName: 'SHREE AJIT PAPER', shade: 'AG', remark: '-', days: 290, millReelNo: 'SA-902', rate: 30.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r10', reelNo: 'B27', zone: 'A', paperName: '44/180/18', weight: 95, millName: 'SHREE AJIT PAPER', shade: 'AG', remark: '-', days: 290, millReelNo: 'SA-903', rate: 30.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r11', reelNo: 'B28*', zone: 'A', paperName: '31/150/16', weight: 20, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-99', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r12', reelNo: 'B30', zone: 'A', paperName: '43/150/16', weight: 105, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-102', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r13', reelNo: 'B35', zone: 'A', paperName: '49/150/16', weight: 128, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-110', rate: 29.50, quality: 'OK', inDate: '2025-12-01' },
+            { id: 'r14', reelNo: 'B64', zone: 'A', paperName: '29.5/150/16', weight: 438, millName: 'NEXA PAPER', shade: 'Golden', remark: '-', days: 290, millReelNo: 'NX-304', rate: 29.50, quality: 'OK', inDate: '2025-12-01' }
+        ],
+        reelsOutHistory: []
+    };
+
+    let db = defaultData;
+    try {
+        const saved = localStorage.getItem(DB_KEY);
+        if (saved) {
+            db = Object.assign({}, defaultData, JSON.parse(saved));
+        }
+    } catch(e) {
+        console.warn("Storage fallback:", e);
+    }
+
+    function saveDB() {
+        try {
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        } catch(e) {
+            console.error("Storage save failed:", e);
+        }
+    }
+
+    function esc(s) {
+        return String(s || '').replace(/[&<>"']/g, function(m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+        });
+    }
+
+    function showToast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        const bg = type === 'error' ? 'bg-red-600' : (type === 'success' ? 'bg-emerald-600' : 'bg-slate-800');
+        toast.className = `${bg} text-white px-4 py-3 rounded-lg shadow-xl text-xs font-bold flex items-center space-x-2 pointer-events-auto transition-all duration-300`;
+        toast.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${esc(msg)}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); }, 3000);
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) return resolve(null);
+            const valid = ['image/jpeg', 'image/jpg', 'application/pdf'].includes(file.type) || file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.jpg');
+            if (!valid) return reject(new Error('Only JPEG and PDF files are allowed.'));
+            const reader = new FileReader();
+            reader.onload = () => resolve({ name: file.name, type: file.type, data: reader.result });
+            reader.onerror = () => reject(new Error('File reading failed.'));
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const ERP = {
+        switchTab: function(tabKey) {
+            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('bg-white/20'));
+
+            const view = document.getElementById('view-' + tabKey);
+            const nav = document.getElementById('navBtn-' + tabKey);
+            if (view) view.classList.remove('hidden');
+            if (nav) nav.classList.add('bg-white/20');
+
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar')?.classList.add('hidden');
+            }
+
+            if (tabKey === 'paperStock') ERP.renderPaperStock();
+            if (tabKey === 'paperIn') ERP.populatePaperInDropdowns();
+            if (tabKey === 'paperOut') ERP.populatePaperOutForm();
+            if (tabKey === 'paperMaster') ERP.renderPaperMaster();
+            if (tabKey === 'millMaster') ERP.renderMillMaster();
+            if (tabKey === 'shadeMaster') ERP.renderShadeMaster();
+            if (tabKey === 'boxPrice') ERP.calculateBoxPrice();
+        },
+
+        toggleStockSubmenu: function() {
+            const menu = document.getElementById('stockSubmenu');
+            const caret = document.getElementById('stockCaret');
+            menu.classList.toggle('hidden');
+            caret.classList.toggle('rotate-180');
+        },
+
+        toggleMobileSidebar: function() {
+            document.getElementById('sidebar')?.classList.toggle('hidden');
+        },
+
+        // PAPER IN
+        populatePaperInDropdowns: function() {
+            const dateEl = document.getElementById('in_date');
+            if (dateEl && !dateEl.value) {
+                dateEl.value = new Date().toISOString().split('T')[0];
+            }
+
+            const pSel = document.getElementById('in_paperName');
+            const mSel = document.getElementById('in_millName');
+            const sSel = document.getElementById('in_shade');
+
+            if (pSel) pSel.innerHTML = db.paperMaster.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('');
+            if (mSel) mSel.innerHTML = db.millMaster.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+            if (sSel) sSel.innerHTML = db.shadeMaster.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+        },
+
+        handleSavePaperIn: function(e) {
+            e.preventDefault();
+            const reelNo = document.getElementById('in_reelNo').value.trim().toUpperCase();
+            const paperName = document.getElementById('in_paperName').value;
+            const millName = document.getElementById('in_millName').value;
+            const shade = document.getElementById('in_shade').value;
+            const rate = parseFloat(document.getElementById('in_rate').value) || 0;
+            const remark = document.getElementById('in_remark').value.trim() || '-';
+            const storeZone = document.getElementById('in_storeZone').value.trim().toUpperCase() || 'A';
+            const weight = parseFloat(document.getElementById('in_weight').value) || 0;
+            const millReelNo = document.getElementById('in_millReelNo').value.trim() || '-';
+            const quality = document.querySelector('input[name="in_quality"]:checked')?.value || 'OK';
+            const inDate = document.getElementById('in_date').value;
+
+            const existing = db.reelsStock.find(r => r.reelNo.toLowerCase() === reelNo.toLowerCase());
+            if (existing) {
+                showToast(`Reel No ${reelNo} already exists in store!`, 'error');
+                return;
+            }
+
+            db.reelsStock.unshift({
+                id: 'reel_' + Date.now(),
+                reelNo,
+                zone: storeZone,
+                paperName,
+                weight,
+                millName,
+                shade,
+                remark,
+                days: 0,
+                millReelNo,
+                rate,
+                quality,
+                inDate
+            });
+
+            saveDB();
+            ERP.resetPaperInForm();
+            ERP.updateStockMetrics();
+            showToast(`Reel ${reelNo} inward recorded successfully!`, 'success');
+            ERP.switchTab('paperStock');
+        },
+
+        resetPaperInForm: function() {
+            document.getElementById('paperInForm')?.reset();
+            document.getElementById('in_date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('in_storeZone').value = 'A';
+        },
+
+        // PAPER OUT
+        populatePaperOutForm: function() {
+            const dateEl = document.getElementById('out_date');
+            if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+
+            const sel = document.getElementById('out_select_reel');
+            if (!sel) return;
+
+            sel.innerHTML = '<option value="">-- Choose Stock Reel --</option>' + db.reelsStock.map(r => `
+                <option value="${r.id}">[Reel: ${r.reelNo}] ${r.paperName} | ${r.weight} Kg (${r.millName})</option>
+            `).join('');
+
+            ERP.renderPaperOutTable();
+        },
+
+        handleSelectReelForOut: function(reelId) {
+            const reel = db.reelsStock.find(r => r.id === reelId);
+            if (!reel) {
+                document.getElementById('out_qty').value = '';
+                document.getElementById('out_balance').value = '';
+                return;
+            }
+            document.getElementById('out_qty').max = reel.weight;
+            document.getElementById('out_qty').value = reel.weight;
+            ERP.calcOutBalance();
+        },
+
+        calcOutBalance: function() {
+            const selId = document.getElementById('out_select_reel').value;
+            const reel = db.reelsStock.find(r => r.id === selId);
+            if (!reel) return;
+
+            const outQty = parseFloat(document.getElementById('out_qty').value) || 0;
+            const balance = Math.max(0, reel.weight - outQty);
+            document.getElementById('out_balance').value = balance + ' Kg';
+        },
+
+        handleProcessPaperOut: function(e) {
+            e.preventDefault();
+            const selId = document.getElementById('out_select_reel').value;
+            const reelIndex = db.reelsStock.findIndex(r => r.id === selId);
+            if (reelIndex === -1) {
+                showToast("Please choose a valid reel from stock", "error");
+                return;
+            }
+
+            const reel = db.reelsStock[reelIndex];
+            const outQty = parseFloat(document.getElementById('out_qty').value) || 0;
+            const outDate = document.getElementById('out_date').value;
+            const remark = document.getElementById('out_remark').value.trim() || 'Issued to Corrugation';
+
+            if (outQty <= 0 || outQty > reel.weight) {
+                showToast(`Invalid quantity. Max: ${reel.weight} Kg`, "error");
+                return;
+            }
+
+            db.reelsOutHistory.unshift({
+                id: 'out_' + Date.now(),
+                reelNo: reel.reelNo,
+                date: outDate,
+                paperName: reel.paperName,
+                qty: outQty,
+                millName: reel.millName,
+                shade: reel.shade,
+                remark: remark
+            });
+
+            const remaining = reel.weight - outQty;
+            if (remaining <= 0) {
+                db.reelsStock.splice(reelIndex, 1);
+            } else {
+                reel.weight = remaining;
+            }
+
+            saveDB();
+            ERP.populatePaperOutForm();
+            ERP.updateStockMetrics();
+            showToast(`Issued ${outQty} Kg from Reel ${reel.reelNo}!`, 'success');
+        },
+
+        renderPaperOutTable: function() {
+            const tbody = document.getElementById('paperOutTableBody');
+            const badgeTotal = document.getElementById('out_total_kg_badge');
+            const badgeCount = document.getElementById('outLogCount');
+            if (!tbody) return;
+
+            const totalIssuedKg = db.reelsOutHistory.reduce((a, c) => a + Number(c.qty || 0), 0);
+            if (badgeTotal) badgeTotal.innerText = totalIssuedKg.toLocaleString();
+            if (badgeCount) badgeCount.innerText = `${db.reelsOutHistory.length} Dispatches`;
+
+            if (db.reelsOutHistory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No raw paper outward issues recorded yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = db.reelsOutHistory.map(o => `
+                <tr class="hover:bg-orange-50/50 border-b">
+                    <td class="p-2 font-mono font-bold text-slate-900">${esc(o.reelNo)}</td>
+                    <td class="p-2 text-slate-500 font-mono">${esc(o.date)}</td>
+                    <td class="p-2 font-bold">${esc(o.paperName)}</td>
+                    <td class="p-2 text-right font-black text-rose-600 font-mono">${Number(o.qty).toLocaleString()} Kg</td>
+                    <td class="p-2">${esc(o.millName)}</td>
+                    <td class="p-2">${esc(o.shade)}</td>
+                    <td class="p-2 text-slate-500">${esc(o.remark)}</td>
+                </tr>
+            `).join('');
+        },
+
+        // PAPER STOCK
+        renderPaperStock: function() {
+            const rKw = (document.getElementById('filterStockReel')?.value || '').toLowerCase();
+            const pKw = (document.getElementById('filterStockPaper')?.value || '').toLowerCase();
+            const mKw = (document.getElementById('filterStockMill')?.value || '').toLowerCase();
+            const sKw = (document.getElementById('filterStockShade')?.value || '').toLowerCase();
+            const zKw = (document.getElementById('filterStockZone')?.value || '').toLowerCase();
+
+            const filtered = db.reelsStock.filter(r => {
+                const matchR = !rKw || r.reelNo.toLowerCase().includes(rKw);
+                const matchP = !pKw || r.paperName.toLowerCase().includes(pKw);
+                const matchM = !mKw || r.millName.toLowerCase().includes(mKw);
+                const matchS = !sKw || r.shade.toLowerCase().includes(sKw);
+                const matchZ = !zKw || r.zone.toLowerCase().includes(zKw);
+                return matchR && matchP && matchM && matchS && matchZ;
+            });
+
+            const tbody = document.getElementById('stockTableBody');
+            if (!tbody) return;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="p-8 text-center text-slate-400">No reels found matching filter query.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(r => {
+                const amt = (r.weight * r.rate);
+                return `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 font-medium">
+                        <td class="p-2.5 font-mono font-black text-blue-800">${esc(r.reelNo)}</td>
+                        <td class="p-2.5 text-center font-bold">${esc(r.zone || 'A')}</td>
+                        <td class="p-2.5 font-bold text-slate-900">${esc(r.paperName)}</td>
+                        <td class="p-2.5 text-right font-black font-mono text-emerald-700">${Number(r.weight).toLocaleString()}</td>
+                        <td class="p-2.5 text-slate-700">${esc(r.millName)}</td>
+                        <td class="p-2.5 font-semibold">${esc(r.shade)}</td>
+                        <td class="p-2.5 text-slate-500">${esc(r.remark || '-')}</td>
+                        <td class="p-2.5 text-center font-mono text-slate-600">${r.days || 170}</td>
+                        <td class="p-2.5 font-mono text-[11px]">${esc(r.millReelNo || '-')}</td>
+                        <td class="p-2.5 text-right font-mono">${Number(r.rate).toFixed(1)}</td>
+                        <td class="p-2.5 text-right font-mono font-bold text-brandRed">₹${Math.round(amt).toLocaleString('en-IN')}</td>
+                        <td class="p-2.5 text-center">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase ${r.quality === 'Hold' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${esc(r.quality || 'OK')}</span>
+                        </td>
+                        <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
+                            <button onclick="ERP.deleteStockReel('${r.id}')" class="p-1 text-slate-400 hover:text-red-600" title="Delete Reel"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            ERP.updateStockMetrics();
+        },
+
+        deleteStockReel: function(reelId) {
+            db.reelsStock = db.reelsStock.filter(r => r.id !== reelId);
+            saveDB();
+            ERP.renderPaperStock();
+            ERP.updateStockMetrics();
+            showToast("Reel record removed from store", "info");
+        },
+
+        applyStockFilters: function() {
+            ERP.renderPaperStock();
+        },
+
+        resetStockFilters: function() {
+            ['filterStockReel', 'filterStockPaper', 'filterStockMill', 'filterStockShade', 'filterStockZone'].forEach(id => {
+                if (document.getElementById(id)) document.getElementById(id).value = '';
+            });
+            ERP.renderPaperStock();
+        },
+
+        updateStockMetrics: function() {
+            const totalKg = db.reelsStock.reduce((a, c) => a + Number(c.weight || 0), 0);
+            const totalTon = (totalKg / 1000).toFixed(3);
+            const totalCost = db.reelsStock.reduce((a, c) => a + (Number(c.weight || 0) * Number(c.rate || 0)), 0);
+
+            const mTon = document.getElementById('stockMetricTotalTon');
+            const mCount = document.getElementById('stockMetricReelCount');
+            const mCost = document.getElementById('stockMetricCost');
+            const kpiTon = document.getElementById('kpiStockTotalTon');
+            const sideKg = document.getElementById('statStockWeight');
+            const sideReels = document.getElementById('statReelCount');
+            const navBadge = document.getElementById('badgeTotalStockTon');
+            const sideBox = document.getElementById('statBoxCount');
+
+            if (mTon) mTon.innerText = `${totalTon} Ton (${totalKg.toLocaleString()} Kg)`;
+            if (mCount) mCount.innerText = db.reelsStock.length;
+            if (mCost) mCost.innerText = '₹' + Math.round(totalCost).toLocaleString('en-IN');
+            if (kpiTon) kpiTon.innerText = `${totalTon} Ton`;
+            if (sideKg) sideKg.innerText = `${totalTon} Ton`;
+            if (sideReels) sideReels.innerText = db.reelsStock.length;
+            if (navBadge) navBadge.innerText = `${Math.round(totalTon)} T`;
+            if (sideBox) sideBox.innerText = db.boxes.length;
+        },
+
+        exportStockToCSV: function() {
+            if (db.reelsStock.length === 0) return;
+            let csv = "REEL NO,ZONE,PAPER NAME,WEIGHT(KG),MILL NAME,SHADE,DAYS,MILL REEL NO,RATE,AMOUNT,STATUS\n";
+            db.reelsStock.forEach(r => {
+                csv += `"${r.reelNo}","${r.zone}","${r.paperName}","${r.weight}","${r.millName}","${r.shade}","${r.days}","${r.millReelNo}","${r.rate}","${r.weight * r.rate}","${r.quality}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Paper_Stock_${Date.now()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        },
+
+        // MASTERS
+        renderPaperMaster: function() {
+            const body = document.getElementById('paperMasterListBody');
+            document.getElementById('paperMasterCount').innerText = `${db.paperMaster.length} varieties`;
+            if (!body) return;
+            body.innerHTML = db.paperMaster.map(p => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-2.5 font-bold font-mono text-slate-800">${esc(p)}</td>
+                    <td class="p-2.5 text-right">
+                        <button onclick="ERP.removePaperMasterItem('${esc(p)}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        handleSavePaperMaster: function(e) {
+            e.preventDefault();
+            const val = document.getElementById('newPaperName').value.trim();
+            if (val && !db.paperMaster.includes(val)) {
+                db.paperMaster.push(val);
+                saveDB();
+                document.getElementById('newPaperName').value = '';
+                ERP.renderPaperMaster();
+                showToast("Paper type registered!", "success");
+            }
+        },
+
+        removePaperMasterItem: function(item) {
+            db.paperMaster = db.paperMaster.filter(x => x !== item);
+            saveDB();
+            ERP.renderPaperMaster();
+        },
+
+        renderMillMaster: function() {
+            const body = document.getElementById('millMasterListBody');
+            document.getElementById('millMasterCount').innerText = `${db.millMaster.length} mills`;
+            if (!body) return;
+            body.innerHTML = db.millMaster.map(m => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-2.5 font-bold text-slate-800">${esc(m)}</td>
+                    <td class="p-2.5 text-right">
+                        <button onclick="ERP.removeMillMasterItem('${esc(m)}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        handleSaveMillMaster: function(e) {
+            e.preventDefault();
+            const val = document.getElementById('newMillName').value.trim().toUpperCase();
+            if (val && !db.millMaster.includes(val)) {
+                db.millMaster.push(val);
+                saveDB();
+                document.getElementById('newMillName').value = '';
+                ERP.renderMillMaster();
+                showToast("Mill registered!", "success");
+            }
+        },
+
+        removeMillMasterItem: function(item) {
+            db.millMaster = db.millMaster.filter(x => x !== item);
+            saveDB();
+            ERP.renderMillMaster();
+        },
+
+        renderShadeMaster: function() {
+            const body = document.getElementById('shadeMasterListBody');
+            document.getElementById('shadeMasterCount').innerText = `${db.shadeMaster.length} shades`;
+            if (!body) return;
+            body.innerHTML = db.shadeMaster.map(s => `
+                <tr class="hover:bg-slate-50 border-b">
+                    <td class="p-2.5 font-bold text-slate-800">${esc(s)}</td>
+                    <td class="p-2.5 text-right">
+                        <button onclick="ERP.removeShadeMasterItem('${esc(s)}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        handleSaveShadeMaster: function(e) {
+            e.preventDefault();
+            const val = document.getElementById('newShadeName').value.trim();
+            if (val && !db.shadeMaster.includes(val)) {
+                db.shadeMaster.push(val);
+                saveDB();
+                document.getElementById('newShadeName').value = '';
+                ERP.renderShadeMaster();
+                showToast("Shade registered!", "success");
+            }
+        },
+
+        removeShadeMasterItem: function(item) {
+            db.shadeMaster = db.shadeMaster.filter(x => x !== item);
+            saveDB();
+            ERP.renderShadeMaster();
+        },
+
+        // BASE BOX & ORDER LOGIC
+        setOrderTab: function(tabName) {
+            db.currentOrderTab = tabName;
+            ['received', 'pending', 'dispatch'].forEach(t => {
+                const btn = document.getElementById('orderTabBtn-' + t);
+                if (btn) {
+                    btn.className = (t === tabName)
+                        ? "py-2.5 px-4 text-xs font-bold border-b-2 border-brandRed text-brandRed bg-white rounded-t-lg transition flex items-center space-x-1.5 shadow-sm"
+                        : "py-2.5 px-4 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-t-lg transition flex items-center space-x-1.5";
+                }
+            });
+            ERP.renderOrders();
+        },
+
+        renderOrders: function() {
+            const tbody = document.getElementById('ordersTableBody');
+            if (!tbody) return;
+            const tab = db.currentOrderTab || 'received';
+            const filtered = db.orders.filter(o => o.status === tab);
+
+            const rec = db.orders.filter(o => o.status === 'received').length;
+            const pend = db.orders.filter(o => o.status === 'pending').length;
+            const disp = db.orders.filter(o => o.status === 'dispatch').length;
+
+            document.getElementById('kpiReceivedCount').innerText = rec;
+            document.getElementById('kpiPendingCount').innerText = pend;
+            document.getElementById('kpiDispatchCount').innerText = disp;
+            document.getElementById('navOrderBadge').innerText = db.orders.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-400">No orders in this stage.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(o => `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3 font-mono font-black text-slate-900">${esc(o.poNumber)}</td>
+                    <td class="p-3 text-slate-500">${esc(o.date)}</td>
+                    <td class="p-3">
+                        <strong class="text-slate-900 block">${esc(o.boxName)}</strong>
+                        <span class="text-slate-500 text-[11px]">${esc(o.companyName)}</span>
+                    </td>
+                    <td class="p-3 text-center font-mono">${esc(o.dims)}</td>
+                    <td class="p-3 text-right font-black">${Number(o.qty).toLocaleString()}</td>
+                    <td class="p-3 text-right font-mono">₹${Number(o.unitPrice).toFixed(2)}</td>
+                    <td class="p-3 text-right font-mono font-black text-brandRed">₹${Number(o.totalValuation).toLocaleString('en-IN')}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-100 text-slate-800">${esc(o.status)}</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        ${o.status === 'received' ? `<button onclick="ERP.advanceOrderStatus('${o.id}', 'pending')" class="px-2 py-1 bg-amber-600 text-white rounded font-bold text-[11px]">Start</button>` : ''}
+                        ${o.status === 'pending' ? `<button onclick="ERP.advanceOrderStatus('${o.id}', 'dispatch')" class="px-2 py-1 bg-emerald-600 text-white rounded font-bold text-[11px]">Dispatch</button>` : ''}
+                        ${o.status === 'dispatch' ? `<button onclick="ERP.openChallanModal('${o.id}')" class="px-2 py-1 bg-slate-800 text-white rounded font-bold text-[11px]">Challan</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        advanceOrderStatus: function(orderId, newStatus) {
+            const target = db.orders.find(o => o.id === orderId);
+            if (!target) return;
+            target.status = newStatus;
+            saveDB();
+            ERP.renderOrders();
+            showToast(`Order status updated to ${newStatus.toUpperCase()}`, 'success');
+        },
+
+        openBookOrderModal: function() {
+            const modal = document.getElementById('bookOrderModal');
+            const select = document.getElementById('orderBoxSelect');
+            document.getElementById('orderDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('orderRefNo').value = 'PO-' + Date.now().toString().slice(-5);
+            select.innerHTML = '<option value="">-- Choose Box --</option>' + db.boxes.map(b => `
+                <option value="${b.id}">${esc(b.name)} (${esc(b.companyName)})</option>
+            `).join('');
+            modal?.classList.remove('hidden');
+        },
+
+        closeBookOrderModal: function() {
+            document.getElementById('bookOrderModal')?.classList.add('hidden');
+        },
+
+        handleOrderBoxSelect: function(boxId) {
+            const b = db.boxes.find(x => x.id === boxId);
+            if (b) {
+                document.getElementById('orderUnitPrice').value = (Number(db.activeCosting.grandTotal) || 28.63).toFixed(2);
+            }
+            ERP.calculateOrderTotal();
+        },
+
+        calculateOrderTotal: function() {
+            const qty = Number(document.getElementById('orderQty')?.value) || 0;
+            const price = Number(document.getElementById('orderUnitPrice')?.value) || 0;
+            document.getElementById('orderTotalValuation').value = '₹' + (qty * price).toLocaleString('en-IN');
+        },
+
+        handleSaveOrder: function(e) {
+            e.preventDefault();
+            const boxId = document.getElementById('orderBoxSelect').value;
+            const b = db.boxes.find(x => x.id === boxId);
+            if (!b) return;
+
+            const qty = Number(document.getElementById('orderQty').value) || 1;
+            const unitPrice = Number(document.getElementById('orderUnitPrice').value) || 0;
+
+            db.orders.unshift({
+                id: 'ord-' + Date.now(),
+                poNumber: document.getElementById('orderRefNo').value.trim(),
+                date: document.getElementById('orderDate').value,
+                companyName: b.companyName,
+                boxId: b.id,
+                boxName: b.name,
+                dims: `${b.length} × ${b.width} × ${b.height} ${b.unit || 'inch'}`,
+                qty: qty,
+                unitPrice: unitPrice,
+                totalValuation: qty * unitPrice,
+                status: 'received',
+                vehicleNo: 'GJ-36-T-8821'
+            });
+
+            saveDB();
+            ERP.renderOrders();
+            ERP.closeBookOrderModal();
+            showToast("Production Order booked!", "success");
+        },
+
+        openChallanModal: function(orderId) {
+            const o = db.orders.find(x => x.id === orderId);
+            if (!o) return;
+            document.getElementById('ch_no').innerText = 'DC-' + o.poNumber;
+            document.getElementById('ch_client').innerText = o.companyName;
+            document.getElementById('ch_boxname').innerText = o.boxName;
+            document.getElementById('ch_qty').innerText = o.qty.toLocaleString() + ' Units';
+            document.getElementById('challanModal')?.classList.remove('hidden');
+        },
+
+        closeChallanModal: function() {
+            document.getElementById('challanModal')?.classList.add('hidden');
+        },
+
+        renderCompanies: function() {
+            const tbody = document.getElementById('companyTableBody');
+            document.getElementById('companyTableCount').innerText = `${db.companies.length} records`;
+
+            if (!tbody) return;
+            tbody.innerHTML = db.companies.map(c => {
+                const countBoxes = db.boxes.filter(b => b.companyName === c.name).length;
+                return `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="p-3 font-mono font-bold text-slate-900">${esc(c.srno)}</td>
+                        <td class="p-3 font-bold text-slate-800">${esc(c.name)}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 rounded text-slate-600">${countBoxes} varieties</span></td>
+                        <td class="p-3 text-right">
+                            <button onclick="ERP.deleteCompany('${c.id}')" class="text-slate-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const selBoxComp = document.getElementById('boxCompanyName');
+            const filterComp = document.getElementById('filterCompany');
+            const datalist = document.getElementById('costingCompanyDatalist');
+
+            if (selBoxComp) {
+                selBoxComp.innerHTML = '<option value="" disabled selected>-- Select Company --</option>' + db.companies.map(c => `
+                    <option value="${esc(c.name)}">${esc(c.name)}</option>
+                `).join('');
+            }
+            if (filterComp) {
+                filterComp.innerHTML = '<option value="">All Companies</option>' + db.companies.map(c => `
+                    <option value="${esc(c.name)}">${esc(c.name)}</option>
+                `).join('');
+            }
+            if (datalist) {
+                datalist.innerHTML = db.companies.map(c => `<option value="${esc(c.name)}"></option>`).join('');
+            }
+        },
+
+        handleSaveCompany: function(e) {
+            e.preventDefault();
+            const srno = document.getElementById('companySrno').value.trim();
+            const name = document.getElementById('companyName').value.trim();
+
+            db.companies.push({ id: 'comp_' + Date.now(), srno, name });
+            saveDB();
+            ERP.resetCompanyForm();
+            ERP.renderCompanies();
+            showToast("Company saved!", "success");
+        },
+
+        resetCompanyForm: function() {
+            document.getElementById('companyEditId').value = '';
+            document.getElementById('companyForm')?.reset();
+        },
+
+        deleteCompany: function(id) {
+            db.companies = db.companies.filter(c => c.id !== id);
+            saveDB();
+            ERP.renderCompanies();
+            showToast("Company removed", "info");
+        },
+
+        autoCalculateCorrugationSpecs: function() {
+            const l = parseFloat(document.getElementById('boxLength')?.value) || 0;
+            const w = parseFloat(document.getElementById('boxWidth')?.value) || 0;
+            const h = parseFloat(document.getElementById('boxHeight')?.value) || 0;
+
+            if (l > 0 && w > 0 && h > 0) {
+                const deckle = Math.round((w + h + 2) * 100) / 100;
+                const cutting = Math.round(((l + w) * 2 + 3) * 100) / 100;
+                const weight = Math.round((deckle * cutting * 0.3) * 10) / 10;
+
+                const elD = document.getElementById('boxDackle');
+                const elC = document.getElementById('boxCutting');
+                const elW = document.getElementById('boxWeight');
+
+                if (elD && !elD.value) elD.value = deckle;
+                if (elC && !elC.value) elC.value = cutting;
+                if (elW && !elW.value) elW.value = weight;
+            }
+        },
+
+        handleSaveBox: async function(e) {
+            e.preventDefault();
+            try {
+                const dieFileInput = document.getElementById('boxDieDrawing');
+                const proofFileInput = document.getElementById('boxPrintingProof');
+
+                let dieFile = null;
+                let proofFile = null;
+
+                if (dieFileInput?.files[0]) dieFile = await readFileAsDataURL(dieFileInput.files[0]);
+                if (proofFileInput?.files[0]) proofFile = await readFileAsDataURL(proofFileInput.files[0]);
+
+                const editId = document.getElementById('boxEditId').value;
+                const srno = document.getElementById('boxSrno').value.trim();
+                const companyName = document.getElementById('boxCompanyName').value;
+                const name = document.getElementById('boxName').value.trim();
+                const boxType = document.getElementById('boxType').value.trim() || 'Carton';
+
+                const length = parseFloat(document.getElementById('boxLength').value) || 0;
+                const width = parseFloat(document.getElementById('boxWidth').value) || 0;
+                const height = parseFloat(document.getElementById('boxHeight').value) || 0;
+                const unit = document.getElementById('boxUnit').value || 'inch';
+
+                const ply = document.getElementById('boxPly').value || '5 Ply';
+                const dackle = parseFloat(document.getElementById('boxDackle').value) || 0;
+                const cutting = parseFloat(document.getElementById('boxCutting').value) || 0;
+                const boxInSheet = parseFloat(document.getElementById('boxInSheet').value) || 1;
+                const weight = parseFloat(document.getElementById('boxWeight').value) || 0;
+                const weightUnit = document.getElementById('weightUnit').value || 'g';
+
+                const topPaper = document.getElementById('boxTopPaper').value.trim();
+                const flutePaper = document.getElementById('boxFlutePaper').value.trim();
+                const bottomPaper = document.getElementById('boxBottomPaper').value.trim();
+
+                const boxObj = {
+                    srno, companyName, name, boxType, length, width, height, unit,
+                    ply, dackle, cutting, boxInSheet, weight, weightUnit,
+                    topPaper, flutePaper, bottomPaper
+                };
+
+                if (editId) {
+                    const idx = db.boxes.findIndex(b => b.id === editId);
+                    if (idx !== -1) {
+                        boxObj.id = editId;
+                        boxObj.dieDrawing = dieFile || db.boxes[idx].dieDrawing || null;
+                        boxObj.printingProof = proofFile || db.boxes[idx].printingProof || null;
+                        db.boxes[idx] = boxObj;
+                    }
+                } else {
+                    boxObj.id = 'box_' + Date.now();
+                    boxObj.dieDrawing = dieFile;
+                    boxObj.printingProof = proofFile;
+                    db.boxes.unshift(boxObj);
+                }
+
+                saveDB();
+                ERP.resetBoxForm();
+                ERP.applyBoxFilters();
+                ERP.populateCostingBoxPicker();
+                ERP.switchTab('searchBox');
+                showToast("Box Specifications saved!", "success");
+            } catch(err) {
+                showToast(err.message, "error");
+            }
+        },
+
+        resetBoxForm: function() {
+            document.getElementById('boxEditId').value = '';
+            document.getElementById('boxForm')?.reset();
+            if (document.getElementById('boxDieDrawing')) document.getElementById('boxDieDrawing').value = '';
+            if (document.getElementById('boxPrintingProof')) document.getElementById('boxPrintingProof').value = '';
+            document.getElementById('boxSubmitLabel').innerText = 'save';
+            document.getElementById('cancelBoxEditBtn')?.classList.add('hidden');
+        },
+
+        deleteBox: function(id) {
+            db.boxes = db.boxes.filter(b => b.id !== id);
+            saveDB();
+            ERP.applyBoxFilters();
+            ERP.populateCostingBoxPicker();
+            showToast("Box record removed", "info");
+        },
+
+        applyBoxFilters: function() {
+            const kw = (document.getElementById('filterKeyword')?.value || '').toLowerCase();
+            const comp = document.getElementById('filterCompany')?.value || '';
+            const minL = parseFloat(document.getElementById('filterMinLength')?.value) || 0;
+
+            const filtered = db.boxes.filter(b => {
+                const matchKw = !kw || b.name.toLowerCase().includes(kw) || String(b.srno).includes(kw);
+                const matchComp = !comp || b.companyName === comp;
+                const matchL = !minL || b.length >= minL;
+                return matchKw && matchComp && matchL;
+            });
+
+            document.getElementById('filteredResultsBadge').innerText = `${filtered.length} matches`;
+            const tbody = document.getElementById('searchTableBody');
+            if (!tbody) return;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-400">No boxes found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(b => `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="p-3 font-mono font-bold text-slate-900">${esc(b.srno)}</td>
+                    <td class="p-3 font-bold text-slate-900">${esc(b.name)}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 rounded">${esc(b.boxType || '-')}</span></td>
+                    <td class="p-3 text-slate-600">${esc(b.companyName)}</td>
+                    <td class="p-3 font-mono font-bold">${b.length} × ${b.width} × ${b.height}</td>
+                    <td class="p-3 text-brandRed font-black">${esc(b.ply || '5 Ply')}</td>
+                    <td class="p-3 font-mono">${b.dackle}</td>
+                    <td class="p-3 font-mono">${b.cutting}</td>
+                    <td class="p-3 font-mono text-center">${b.boxInSheet}</td>
+                    <td class="p-3 font-mono">${b.weight} ${esc(b.weightUnit || 'g')}</td>
+                    <td class="p-3 text-center whitespace-nowrap">
+                        ${b.dieDrawing ? `<span class="inline-block px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold mr-1"><i class="fa-solid fa-vector-square"></i> Die</span>` : ''}
+                        ${b.printingProof ? `<span class="inline-block px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold"><i class="fa-solid fa-image"></i> Proof</span>` : ''}
+                        ${!b.dieDrawing && !b.printingProof ? `<span class="text-slate-300">-</span>` : ''}
+                    </td>
+                    <td class="p-3 text-right space-x-1 whitespace-nowrap">
+                        <button onclick="ERP.openFullPreview('${b.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-[11px]">
+                            open as a form
+                        </button>
+                        <button onclick="ERP.deleteBox('${b.id}')" class="p-1 text-slate-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        resetBoxFilters: function() {
+            document.getElementById('filterKeyword').value = '';
+            document.getElementById('filterCompany').value = '';
+            document.getElementById('filterMinLength').value = '';
+            ERP.applyBoxFilters();
+        },
+
+        exportBoxesToCSV: function() {
+            if (db.boxes.length === 0) return;
+            let csv = "SR NO.,BOX NAME,COMPANY,L,W,H,PLY,DACKLE,CUTTING,WEIGHT\n";
+            db.boxes.forEach(b => {
+                csv += `"${b.srno}","${b.name}","${b.companyName}","${b.length}","${b.width}","${b.height}","${b.ply}","${b.dackle}","${b.cutting}","${b.weight}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `boxes_${Date.now()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        },
+
+        openFullPreview: function(boxId) {
+            const b = db.boxes.find(x => x.id === boxId);
+            if (!b) return;
+
+            document.getElementById('modalCompanySrno').innerText = 'SRNO: ' + b.srno;
+            document.getElementById('modalBoxName').innerText = b.name;
+            document.getElementById('modalCompanyName').innerText = b.companyName;
+            document.getElementById('modalBoxType').innerText = b.boxType || 'Master Carton';
+            document.getElementById('modalDimSummary').innerText = `${b.length} × ${b.width} × ${b.height} ${b.unit || 'inch'}`;
+
+            document.getElementById('modalBoxLength').innerText = b.length;
+            document.getElementById('modalBoxWidth').innerText = b.width;
+            document.getElementById('modalBoxHeight').innerText = b.height;
+
+            document.getElementById('modalBoxPly').innerText = b.ply || '5 Ply';
+            document.getElementById('modalBoxDackle').innerText = b.dackle;
+            document.getElementById('modalBoxCutting').innerText = b.cutting;
+            document.getElementById('modalBoxInSheet').innerText = b.boxInSheet;
+
+            document.getElementById('modalBoxTopPaper').innerText = b.topPaper || '-';
+            document.getElementById('modalBoxFlutePaper').innerText = b.flutePaper || '-';
+            document.getElementById('modalBoxBottomPaper').innerText = b.bottomPaper || '-';
+
+            const dieEl = document.getElementById('modalDieDrawingLink');
+            const proofEl = document.getElementById('modalPrintingProofLink');
+
+            if (b.dieDrawing) {
+                dieEl.innerHTML = `<a href="${b.dieDrawing.data}" download="${b.dieDrawing.name}" target="_blank" class="text-blue-600 font-bold hover:underline flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-down text-sm"></i> Download Die Drawing (${esc(b.dieDrawing.name)})</a>`;
+            } else {
+                dieEl.innerHTML = `Die Drawing: <span class="text-slate-400 italic">None</span>`;
+            }
+
+            if (b.printingProof) {
+                proofEl.innerHTML = `<a href="${b.printingProof.data}" download="${b.printingProof.name}" target="_blank" class="text-emerald-600 font-bold hover:underline flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-down text-sm"></i> Download Printing Proof (${esc(b.printingProof.name)})</a>`;
+            } else {
+                proofEl.innerHTML = `Printing Proof: <span class="text-slate-400 italic">None</span>`;
+            }
+
+            document.getElementById('fullPreviewModal')?.classList.remove('hidden');
+        },
+
+        closeFullPreview: function() {
+            document.getElementById('fullPreviewModal')?.classList.add('hidden');
+        },
+
+        populateCostingBoxPicker: function(filterComp = '') {
+            const picker = document.getElementById('costingBoxPicker');
+            if (!picker) return;
+            const list = filterComp ? db.boxes.filter(b => b.companyName.toLowerCase() === filterComp.toLowerCase()) : db.boxes;
+            picker.innerHTML = '<option value="">-- Select Box to Load Specifications --</option>' + list.map(b => `
+                <option value="${b.id}">[SR# ${b.srno}] ${esc(b.name)} - ${esc(b.companyName)}</option>
+            `).join('');
+        },
+
+        handleCostingCompanyInput: function(val) {
+            const v = (val || '').trim();
+            ERP.populateCostingBoxPicker(v);
+            if (v) {
+                const firstMatch = db.boxes.find(b => b.companyName.toLowerCase() === v.toLowerCase());
+                if (firstMatch) {
+                    document.getElementById('costingBoxPicker').value = firstMatch.id;
+                    ERP.handleCostingBoxChange(firstMatch.id);
+                }
+            }
+        },
+
+        handleCostingBoxChange: function(boxId) {
+            const b = db.boxes.find(x => x.id === boxId);
+            if (!b) return;
+
+            document.getElementById('costingCompanyInput').value = b.companyName;
+            document.getElementById('c_duplex_dackle').value = b.dackle;
+            document.getElementById('c_duplex_cutting').value = b.cutting;
+            document.getElementById('c_craft_dackle').value = b.dackle;
+            document.getElementById('c_craft_cutting').value = b.cutting;
+            document.getElementById('c_sheet_box').value = b.boxInSheet || 0.5;
+
+            ERP.calculateBoxPrice();
+        },
+
+        calculateBoxPrice: function() {
+            const num = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+            const dupDackle = num('c_duplex_dackle');
+            const dupCutting = num('c_duplex_cutting');
+            const dupGsm = num('c_duplex_gsm');
+            const dupRate = num('c_duplex_rate');
+
+            const craftDackle = num('c_craft_dackle');
+            const craftCutting = num('c_craft_cutting');
+            const craftGsm = num('c_craft_gsm');
+            const craftRate = num('c_craft_rate');
+
+            const dupWeight = Math.round((dupDackle * dupCutting * dupGsm) / 1550);
+            const craftWeight = Math.round((craftDackle * craftCutting * craftGsm) / 1550);
+
+            const dupCost = Math.round(((dupWeight / 1000) * dupRate) * 100) / 100;
+            const craftCost = Math.round(((craftWeight / 1000) * craftRate) * 100) / 100;
+
+            const printCost = num('c_print');
+            const laborCost = num('c_laber');
+            const extraCost = num('c_extra');
+            const ups = Math.max(num('c_sheet_box'), 0.01);
+            const marginPct = num('c_margin_pct');
+
+            const sheetTotal = Math.round((dupCost + craftCost + printCost + laborCost + extraCost) * 100) / 100;
+            const perBoxPrice = Math.round((sheetTotal / ups) * 100) / 100;
+            const marginAmt = Math.round((perBoxPrice * (marginPct / 100)) * 10000) / 10000;
+            const grandTotal = Math.round((perBoxPrice + marginAmt) * 100) / 100;
+
+            document.getElementById('c_duplex_weight').innerText = dupWeight;
+            document.getElementById('c_duplex_cost').innerText = dupCost.toFixed(2);
+            document.getElementById('c_craft_weight').innerText = craftWeight;
+            document.getElementById('c_craft_cost').innerText = craftCost.toFixed(2);
+            document.getElementById('c_total_sheet').innerText = sheetTotal.toFixed(2);
+            document.getElementById('c_per_box_price').innerText = perBoxPrice.toFixed(2);
+            document.getElementById('c_grand_total').innerText = grandTotal.toFixed(2);
+            document.getElementById('c_total_weight').innerText = dupWeight + craftWeight;
+
+            db.activeCosting = { dupCost, craftCost, sheetTotal, perBoxPrice, grandTotal };
+        },
+
+        openFinalCopyModal: function() {
+            ERP.calculateBoxPrice();
+            const c = db.activeCosting;
+            document.getElementById('final_val_duplex').innerText = '₹' + c.dupCost.toFixed(2);
+            document.getElementById('final_val_craft').innerText = '₹' + c.craftCost.toFixed(2);
+            document.getElementById('final_val_sheet_tot').innerText = '₹' + c.sheetTotal.toFixed(2);
+            document.getElementById('final_val_raw_unit').innerText = '₹' + c.perBoxPrice.toFixed(2);
+            document.getElementById('final_val_grand_total').innerText = '₹' + c.grandTotal.toFixed(2);
+            document.getElementById('finalCopyModal')?.classList.remove('hidden');
+        },
+
+        closeFinalCopyModal: function() {
+            document.getElementById('finalCopyModal')?.classList.add('hidden');
+        },
+
+        saveCostingAsPDF: function() {
+            const sheet = document.getElementById('view-boxPrice');
+            const opt = {
+                margin: 0.3,
+                filename: `Quote_${Date.now()}.pdf`,
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(sheet).save();
+        },
+
+        renderAdminPanel: function() {
+            const userBody = document.getElementById('adminUserTableBody');
+            if (userBody) {
+                userBody.innerHTML = db.users.map(u => `
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="p-3 font-bold text-slate-900">${esc(u.name)}</td>
+                        <td class="p-3 font-mono text-slate-600">${esc(u.email)}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-purple-100 text-purple-900">${esc(u.role)}</span></td>
+                        <td class="p-3 text-right">
+                            <button onclick="ERP.toggleUserRole('${u.id}')" class="px-2 py-1 text-xs border rounded font-bold">Toggle</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        },
+
+        toggleUserRole: function(userId) {
+            const u = db.users.find(x => x.id === userId);
+            if (!u) return;
+            u.role = u.role === 'admin' ? 'staff' : 'admin';
+            saveDB();
+            ERP.renderAdminPanel();
+        },
+
+        init: function() {
+            const d = new Date().toISOString().split('T')[0];
+            const costingDate = document.getElementById('costingDate');
+            if (costingDate) costingDate.value = d;
+
+            ERP.renderCompanies();
+            ERP.applyBoxFilters();
+            ERP.populateCostingBoxPicker();
+            ERP.renderOrders();
+            ERP.calculateBoxPrice();
+            ERP.renderAdminPanel();
+            ERP.renderPaperStock();
+            ERP.updateStockMetrics();
+        }
+    };
+
+    window.ERP = ERP;
+    document.addEventListener('DOMContentLoaded', ERP.init);
+})();
+</script>
+</body>
+</html>
