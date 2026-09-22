@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L.J. Industries - Complete Cloud ERP</title>
+<style>
+:root{
+  --primary:#b71c1c; --primary-d:#8e0000; --primary-l:#f05545;
+  --accent:#ffca28; --bg:#F4F5F0; --surface:#FFFFFF; --surface-2:#ECEEE6;
+  --ink:#1B1F1A; --ink-2:#586155; --line:#D9DED2;
+  --ok:#2E7D46; --warn:#B4530D; --err:#B3261E; --hold:#8A5A00;
+  --r:10px; --r-lg:16px;
+  --sh1:0 1px 2px rgba(20,30,15,.10),0 1px 3px rgba(20,30,15,.08);
+  --sh2:0 2px 6px rgba(20,30,15,.14),0 4px 14px rgba(20,30,15,.10);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);}
+h1,h2,h3,h4{margin:0}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#c0c0c0;border-radius:4px}
+
+/* Auth Screen */
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(155deg,var(--primary-d),var(--primary) 55%,#d32f2f);z-index:500}
+.loginCard{width:340px;background:var(--surface);border-radius:var(--r-lg);padding:32px 30px 26px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.loginBrand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.loginBrand .mark{width:46px;height:46px;border-radius:12px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.loginBrand h1{font-size:18px} .loginBrand p{margin:2px 0 0;font-size:12px;color:var(--ink-2)}
+
+/* Forms & Buttons */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:5px;font-weight:600;text-transform:uppercase}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r);font-size:14px;background:#fff;color:var(--ink)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--primary)}
+.field input[disabled]{background:#f5f5f5;color:#777}
+.btn{border:none;border-radius:8px;padding:10px 18px;font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.12s}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--primary);color:#fff} .btn-primary:hover{filter:brightness(1.08)}
+.btn-success{background:#2e7d32;color:#fff} .btn-success:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--primary);border:1.5px solid var(--line)} .btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{background:#fff;color:var(--err);border:1.5px solid #EAC5C2} .btn-danger:hover{background:#FBEEED}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+.btn-block{width:100%;justify-content:center}
+.loginErr{color:var(--err);font-size:12.5px;margin:2px 0 12px;min-height:14px}
+
+/* Layout */
+#app{display:none;height:100%}
+.shell{display:flex;height:100%}
+.rail{width:250px;flex:none;background:var(--primary-d);color:#fce4e4;display:flex;flex-direction:column}
+.railHead{padding:18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.12)}
+.railHead .mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;}
+.railNav{flex:1;overflow-y:auto;padding:10px 8px}
+.railGroup{margin:14px 8px 6px;font-size:10.5px;color:#ffcdd2;font-weight:700;text-transform:uppercase;}
+.railItem{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:13.3px;color:#f8bbd0;margin-bottom:2px}
+.railItem:hover{background:rgba(255,255,255,.08);color:#fff}
+.railItem.active{background:var(--primary-l);color:#fff;font-weight:600}
+.railFoot{padding:12px;border-top:1px solid rgba(255,255,255,.12)}
+.railUser{display:flex;align-items:center;gap:9px;padding:8px}
+.railUser .av{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:58px;flex:none;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 22px;box-shadow:var(--sh1);z-index:5}
+.topbar h2{font-size:16.5px;color:var(--primary)}
+.content{flex:1;overflow-y:auto;padding:22px}
+
+/* Components */
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:18px}
+.kpi{background:var(--surface);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh1);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;}
+.kpi .lbl{font-size:11.5px;color:var(--ink-2);font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.kpi .val{font-size:28px;font-weight:700}
+.card{background:var(--surface);border-radius:var(--r-lg);box-shadow:var(--sh1);margin-bottom:18px;overflow:hidden}
+.card .hd{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.card .hd h3{font-size:14.5px;color:var(--primary)}
+.card .bd{padding:16px 18px} .card .bd.pad0{padding:0}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:12.8px}
+thead th{text-align:left;padding:9px 12px;background:var(--surface-2);color:var(--ink-2);font-size:10.7px;text-transform:uppercase;position:sticky;top:0}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:hover{background:#fff9f9}
+.tblwrap{overflow:auto;max-height:58vh}
+.rowActions{display:flex;gap:6px;align-items:center}
+.iconbtn{border:none;background:transparent;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;color:var(--ink-2)}
+.iconbtn:hover{background:#ffebee;color:var(--primary)}
+.empty{padding:34px;text-align:center;color:var(--ink-2);font-size:13px}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.b-ok{background:#E4F2E6;color:var(--ok)} .b-warn{background:#FBEADB;color:var(--warn)} .b-err{background:#FAE3E1;color:var(--err)} .b-blue{background:#E3F2FD;color:#1565C0}
+
+/* Tabs & Costing */
+.dash-tabs{display:flex;border-bottom:2px solid var(--line);margin-bottom:10px;background:#fafafa;padding-top:10px}
+.dash-tab{padding:10px 20px;font-weight:600;font-size:13px;color:var(--ink-2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;text-transform:uppercase}
+.dash-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.dash-tab-blue.active{color:#1976D2;border-bottom-color:#1976D2} .dash-tab-green.active{color:#388E3C;border-bottom-color:#388E3C}
+.costing-table th{background:var(--primary);color:white;border:1px solid var(--primary-d);text-align:center}
+.costing-table td{padding:4px 8px;border:1px solid var(--line)}
+.costing-table input{width:100%;border:none;padding:4px;text-align:center;font-size:13px;background:transparent}
+.costing-table input:focus{outline:1px solid var(--primary);background:#fff}
+.costing-summary-box{background:#fff9c4;border:1px solid #fbc02d;padding:15px;border-radius:8px;text-align:right}
+.grand-total{font-size:20px;font-weight:bold;color:var(--primary);background:#ffeb3b;padding:10px;border-radius:6px;display:inline-block;margin-top:10px}
+
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(20,26,16,.6);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border-radius:var(--r-lg);width:560px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--sh2)}
+.modal .mhd{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:#fafafa;border-radius:var(--r-lg) var(--r-lg) 0 0}
+.modal .mbd{padding:18px 20px;overflow-y:auto}
+.modal .mft{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:#fafafa;border-radius:0 0 var(--r-lg) var(--r-lg)}
+.mclose{background:none;border:none;font-size:18px;cursor:pointer}
+.formrow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formrow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.formrow4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.sectionTitle{font-size:11.5px;font-weight:700;color:var(--primary);text-transform:uppercase;margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line)}
+#snackbar{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:#20261C;color:#fff;padding:12px 20px;border-radius:9px;font-size:13px;opacity:0;transition:.22s;z-index:600;pointer-events:none}
+#snackbar.show{opacity:1;transform:translate(-50%,0)}
+
+/* Report Specifics */
+.repTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.repTab{padding:8px 14px;border-radius:20px;font-size:12.5px;font-weight:600;background:var(--surface);border:1.5px solid var(--line);cursor:pointer;color:var(--ink-2)}
+.repTab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.repGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.repTile{background:var(--surface);border-radius:var(--r);padding:14px 15px;box-shadow:var(--sh1);cursor:pointer;border-top:3px solid var(--primary); transition:0.2s;}
+.repTile:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.repTile .rn{font-size:10.5px;color:var(--accent);font-weight:700}
+.repTile .rt{font-size:13.5px;font-weight:700;margin-top:3px}
+.repTile .rd{font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="loginCard">
+    <div class="loginBrand"><div class="mark">L.J.</div><div><h1>L.J. Industries</h1><p>SaaS Cloud ERP</p></div></div>
+    <div class="field"><label>Email / Username</label><input id="liUser" autocomplete="username" placeholder="admin@ljindustries.com"></div>
+    <div class="field"><label>Password</label><input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+    <div class="loginErr" id="liErr"></div>
+    <button class="btn btn-primary btn-block" id="btnLogin" onclick="Auth.login()">Sign in</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="shell">
+    <div class="rail" id="rail">
+      <div class="railHead"><div class="mark">L.J.</div><div><b style="color:#fff;">L.J. Industries</b><span>Cloud Platform v6.0</span></div></div>
+      <div class="railNav" id="railNav"></div>
+      <div class="railFoot">
+        <div class="railUser"><div class="av">P</div><div><b style="color:#fff;">Pushpendra</b><span style="color:#f8bbd0;">Organization Admin</span></div></div>
+        <button class="btn btn-ghost btn-block btn-sm" style="color:#fff; border-color:rgba(255,255,255,0.3);" onclick="Auth.logout()">Sign out</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div><h2 id="pgTitle">Dashboard</h2><div class="sub" id="pgSub">Overview</div></div>
+        <div class="topActions"><span style="font-size:12px; color:var(--success); font-weight:bold;">🟢 API Connected</span></div>
+      </div>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div id="snackbar"></div>
+
+<script>
+/* =========================================================================
+   CORE DATABASE & SAAS MOCK LAYER
+   ========================================================================= */
+const API_BASE = ""; // same-origin; the backend serves this file, so relative paths work
+const TOKEN_KEY = "lj_jwt";
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const num = v => (isFinite(v)?Number(v):0);
+const esc = s => (s===undefined||s===null)?"":String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const todayStr = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '';
+function snack(msg){ const s=document.getElementById('snackbar'); s.textContent=msg; s.classList.add('show'); clearTimeout(window._sT); window._sT=setTimeout(()=>s.classList.remove('show'),2200); }
+
+/* =========================================================================
+   REAL BACKEND CLIENT — replaces the old localStorage mock.
+   All app data now lives in the server's SQLite database, behind JWT auth.
+   ========================================================================= */
+let DB = null; // populated by loadDB() after login/session check, from GET /api/data
+
+function authToken(){ return sessionStorage.getItem(TOKEN_KEY); }
+
+async function apiFetch(path, opts={}){
+  const headers = Object.assign({ 'Content-Type':'application/json' }, opts.headers||{});
+  const token = authToken();
+  if(token) headers['Authorization'] = 'Bearer '+token;
+  const res = await fetch(API_BASE+path, Object.assign({}, opts, { headers }));
+  if(res.status === 401){ Auth.logout(); throw new Error('Session expired'); }
+  if(!res.ok){ const t = await res.text().catch(()=> ''); throw new Error(t || ('Request failed: '+res.status)); }
+  return res.status===204 ? null : res.json();
+}
+
+async function loadDB(){
+  DB = await apiFetch('/api/data');
+  return DB;
+}
+
+// Fire-and-forget save that the rest of the app already calls after every mutation.
+// It's async under the hood but callers don't need to await it.
+let _saveInFlight = null, _savePending = false;
+function saveDB(){
+  if(_saveInFlight){ _savePending = true; return; }
+  _saveInFlight = apiFetch('/api/data', { method:'PUT', body: JSON.stringify(DB) })
+    .catch(err => snack('Save failed: '+err.message))
+    .finally(() => { _saveInFlight = null; if(_savePending){ _savePending = false; saveDB(); } });
+}
+
+// Auth Layer — real JWT auth against the backend (see server.js /api/auth/login)
+const Auth = {
+    async login() {
+        const u = document.getElementById('liUser').value.trim(), p = document.getElementById('liPass').value;
+        if(!u || !p) { document.getElementById('liErr').textContent = "Enter username and password"; return; }
+        const btn = document.getElementById('btnLogin');
+        btn.disabled = true; btn.innerText = "Signing in...";
+        try {
+            const res = await fetch(API_BASE+'/api/auth/login', {
+                method:'POST', headers:{ 'Content-Type':'application/json' },
+                body: JSON.stringify({ username:u, password:p })
+            });
+            if(!res.ok){ throw new Error(res.status===401 ? 'Invalid credentials' : 'Login failed'); }
+            const data = await res.json();
+            sessionStorage.setItem(TOKEN_KEY, data.token);
+            await loadDB();
+            document.getElementById('loginScreen').style.display='none';
+            document.getElementById('app').style.display='block';
+            buildNav(); go('dashboard');
+        } catch(err) {
+            document.getElementById('liErr').textContent = err.message;
+        } finally {
+            btn.disabled = false; btn.innerText = "Sign in";
+        }
+    },
+    logout() { sessionStorage.removeItem(TOKEN_KEY); location.reload(); }
+};
+document.getElementById('liPass').addEventListener('keydown', e => { if(e.key==='Enter') Auth.login(); });
+
+// On page load, if a token is already stored, verify it's still valid and resume the session.
+(async function bootstrap(){
+  if(!authToken()) return;
+  try {
+    await apiFetch('/api/auth/me');
+    await loadDB();
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    buildNav(); go('dashboard');
+  } catch(e) {
+    sessionStorage.removeItem(TOKEN_KEY); // expired/invalid — fall back to the login screen
+  }
+})();
+
+/* =========================================================================
+   NAVIGATION
+   ========================================================================= */
+const NAV = [
+  {group:"Overview", items:[ ["dashboard","⌂","Dashboard & Orders"] ]},
+  {group:"Packaging & Costing", items:[
+    ["m_company","🏢","Add Company"],
+    ["box_specs","📦","Add New Box Size"],
+    ["search_box","🔍","Search Box & Job Card"],
+    ["box_costing","₹","Box Price Costing"]
+  ]},
+  {group:"Stock (Reels)", items:[
+    ["paperPurchase","⇩","Paper IN (Purchase)"],
+    ["paperOut","⇧","Paper OUT (Issue)"],
+    ["stock","▤","Check Paper in Store"],
+    ["m_material","◍","Paper Master"],
+    ["m_party","◍","Mill / Party Master"]
+  ]},
+  {group:"Reporting", items:[
+    ["reports","▦","Stock Reports (43)"]
+  ]}
+];
+
+function buildNav(){
+  const el = document.getElementById('railNav'); el.innerHTML="";
+  NAV.forEach(g=>{
+    const gd=document.createElement('div'); gd.className='railGroup'; gd.textContent=g.group; el.appendChild(gd);
+    g.items.forEach(([id,ic,label])=>{
+      const it=document.createElement('div'); it.className='railItem'; it.id='nav_'+id;
+      it.innerHTML=`<span class="ic">${ic}</span><span>${label}</span>`;
+      it.onclick=()=>go(id); el.appendChild(it);
+    });
+  });
+}
+
+let CURRENT='dashboard';
+function go(id){
+  CURRENT=id;
+  document.querySelectorAll('.railItem').forEach(x=>x.classList.remove('active'));
+  document.getElementById('nav_'+id).classList.add('active');
+  const TITLES = {
+    dashboard:["Manufacturing Dashboard & Orders","Order pipeline and dispatch"],
+    m_company:["Add Company","Register clients and suppliers"],
+    box_specs:["Add New Box Size","Manufacturing specifications"],
+    search_box:["Search Box Size","Specs and Job Card printing"],
+    box_costing:["Box Price Costing Sheet","Material costing & margin"],
+    paperPurchase:["Paper Purchase (IN)","Register reels into store"],
+    paperOut:["Paper OUT (Consumption)","Issue paper to production"],
+    stock:["Check Paper in Store","Live reel stock ledger"],
+    m_material:["Paper Master","Manage raw material specs"],
+    m_party:["Mill / Party Master","Manage mills"],
+    reports:["Reports","Stock & Production reporting"]
+  };
+  document.getElementById('pgTitle').textContent=TITLES[id][0];
+  document.getElementById('pgSub').textContent=TITLES[id][1];
+  RENDER[id]();
+}
+
+/* =========================================================================
+   GENERIC MODAL & TABLE HELPERS
+   ========================================================================= */
+function nameOf(list,id){ const x=(list||[]).find(i=>i.id===id); return x?x.name:""; }
+function tableHTML(cols, rows, opts={}){
+  if(!rows.length) return `<div class="empty">No records found.</div>`;
+  let h = `<div class="tblwrap"><table><thead><tr>`+cols.map(c=>`<th>${c}</th>`).join('')+(opts.actions?'<th>Action</th>':'')+`</tr></thead><tbody>`;
+  rows.forEach((r,i)=>{ h+='<tr>'+r.map(c=>`<td>${c}</td>`).join('')+(opts.actions?`<td class="rowActions">${opts.actions(i)}</td>`:'')+'</tr>'; });
+  h+='</tbody></table></div>'; return h;
+}
+function csvExport(filename, cols, rows){
+  const esc2 = v => `"${String(v).replace(/"/g,'""')}"`;
+  let csv = cols.map(esc2).join(',')+'\n' + rows.map(r=>r.map(esc2).join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=filename+'.csv'; a.click();
+}
+function printHTML(html,title){
+  const w=window.open('','_blank'); w.document.write(`<html><head><title>${title}</title><style>body{font-family:Arial;padding:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:8px}</style></head><body>${html}</body></html>`);
+  w.document.close(); w.focus(); w.print();
+}
+
+function openModal(title, fields, values, onSave, btnText="Save ✓"){
+  const ov=document.getElementById('overlay'), md=document.getElementById('modal');
+  let body = fields.map(f=>{
+    if(f.customHtml) return f.customHtml;
+    const v = values[f.key]!==undefined? values[f.key] : (f.default||'');
+    if(f.type==='file') return `<div class="field"><label>${f.label}</label><div style="display:flex;gap:10px"><input type="file" id="fld_${f.key}" style="flex:1"><button class="btn btn-ghost btn-sm" onclick="snack('Simulating S3 Cloud Upload...')">Upload to Cloud</button></div></div>`;
+    if(f.type==='select') return `<div class="field"><label>${f.label}</label><select id="fld_${f.key}" ${f.onchange?`onchange="${f.onchange}"`:''}>${f.options.map(o=>`<option value="${o.value}" ${o.value==v?'selected':''}>${o.label}</option>`).join('')}</select></div>`;
+    if(f.type==='checkbox') return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><input id="fld_${f.key}" type="checkbox" style="width:16px;height:16px;" ${v?'checked':''}><label for="fld_${f.key}" style="margin:0;cursor:pointer;text-transform:none;font-size:14px;">${f.label}</label></div>`;
+    return `<div class="field"><label>${f.label}</label><input id="fld_${f.key}" type="${f.type||'text'}" value="${esc(v)}" ${f.readonly?'disabled':''}></div>`;
+  }).join('');
+  md.innerHTML = `<div class="mhd"><h3>${title}</h3><button class="mclose" onclick="closeModal()">✕</button></div><div class="mbd">${body}</div><div class="mft"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="modalSaveBtn">${btnText}</button></div>`;
+  ov.classList.add('show');
+  document.getElementById('modalSaveBtn').onclick = ()=>{
+    const out={};
+    fields.forEach(f=>{ if(!f.customHtml && f.type!=='file') { const el=document.getElementById('fld_'+f.key); out[f.key] = f.type==='checkbox'? el.checked : (f.type==='number'? num(el.value): el.value); }});
+    onSave(out);
+  };
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+
+/* =========================================================================
+   1. DASHBOARD & ORDERS
+   ========================================================================= */
+let DASH_TAB = 'Received';
+function renderDashboard() {
+    const orders = DB.orders;
+    const receivedCount = orders.filter(o => o.status === 'Received').length;
+    const dispCount = orders.filter(o => o.status === 'Dispatch').length;
+    const tonStr = (DB.reels.filter(r=>r.weightBalance>0).reduce((s,r)=>s+r.weightBalance,0)/1000).toFixed(3) + ' Ton';
+
+    const tabOrders = orders.filter(o => o.status === DASH_TAB);
+    let tableHtml = '<div class="empty">No orders in this stage.</div>';
+    if(tabOrders.length > 0) {
+        tableHtml = `<div class="tblwrap"><table><thead><tr><th>PO #</th><th>Order Date</th><th>Dispatch Date</th><th>Company & Box</th><th>Quantity</th><th>Total (₹)</th><th>Status</th><th>Action</th></tr></thead><tbody>` +
+        tabOrders.map(o => {
+            const comp = nameOf(DB.companies, o.companyId);
+            const box = DB.boxes.find(b => b.id === o.boxId);
+            const boxName = box ? `${box.boxName} (${box.l}x${box.w}x${box.h})` : 'N/A';
+            const actionBtn = DASH_TAB === 'Received' ? `<button class="btn btn-sm btn-success" onclick="updateOrderStatus('${o.id}', 'Dispatch')">Dispatch 🚚</button>` : `<span class="badge b-ok">Completed</span>`;
+            return `<tr><td><b>${esc(o.poNo)}</b></td><td>${fmtDate(o.date)}</td><td>${o.dispatchDate?fmtDate(o.dispatchDate):'Pending'}</td><td><b>${esc(comp)}</b><br><small>${boxName}</small></td><td style="color:var(--primary);font-weight:bold;">${num(o.qty)}</td><td style="font-weight:bold;">${(o.qty*o.price).toFixed(2)}</td><td><span class="badge ${DASH_TAB==='Received'?'b-blue':'b-ok'}">${esc(o.status)}</span></td><td>${actionBtn}</td></tr>`;
+        }).join('') + `</tbody></table></div>`;
+    }
+
+    document.getElementById('content').innerHTML = `
+        <div style="display:flex; justify-content:flex-end; margin-bottom:15px;"><button class="btn btn-primary" onclick="openOrderForm()">🛒 Book New Order</button></div>
+        <div class="grid kpis" style="grid-template-columns:repeat(3, 1fr);">
+            <div class="kpi" style="border-left-color:#1976D2;"><div><div class="lbl" style="color:#1976D2">Orders Received</div><div class="val" style="color:#1976D2">${receivedCount}</div></div><div style="font-size:32px">📥</div></div>
+            <div class="kpi" style="border-left-color:#388E3C;"><div><div class="lbl" style="color:#388E3C">Order Dispatch</div><div class="val" style="color:#388E3C">${dispCount}</div></div><div style="font-size:32px">🚚</div></div>
+            <div class="kpi" style="border-left-color:#00796B;background:#E0F2F1;"><div><div class="lbl" style="color:#00796B">Paper Stock</div><div class="val" style="color:#00796B">${tonStr}</div></div><div style="font-size:32px">📜</div></div>
+        </div>
+        <div class="card">
+            <div class="dash-tabs">
+                <div class="dash-tab dash-tab-blue ${DASH_TAB==='Received'?'active':''}" onclick="DASH_TAB='Received';renderDashboard()">📥 Order Received <span class="badge b-blue">${receivedCount}</span></div>
+                <div class="dash-tab dash-tab-green ${DASH_TAB==='Dispatch'?'active':''}" onclick="DASH_TAB='Dispatch';renderDashboard()">🚚 Order Dispatch <span class="badge b-ok">${dispCount}</span></div>
+            </div>
+            <div class="bd pad0">${tableHtml}</div>
+        </div>
+    `;
+}
+function updateOrderStatus(id, newStatus) {
+    const o = DB.orders.find(x => x.id === id);
+    if(o) { o.status = newStatus; if(newStatus === 'Dispatch') o.dispatchDate = todayStr(); saveDB(); snack(`Moved to ${newStatus}`); renderDashboard(); }
+}
+function openOrderForm() {
+    window.tempBoxes = DB.boxes;
+    const compOpts = [{value:'', label:'-- Select Company --'}, ...DB.companies.map(c=>({value:c.id, label:c.name}))];
+    const customHtml = `
+        <div class="formrow2">
+            <div class="field"><label>Company *</label><select id="oComp" onchange="document.getElementById('oBox').innerHTML='<option value=\\\'\\\'>--Select Box--</option>'+window.tempBoxes.filter(b=>b.companyId===this.value).map(b=>'<option value=\\''+b.id+'\\'>'+b.boxName+'</option>').join(''); document.getElementById('oPrice').value=''; document.getElementById('oQty').oninput();">${compOpts.map(o=>`<option value="${o.value}">${o.label}</option>`).join('')}</select></div>
+            <div class="field"><label>Box / Variety *</label><select id="oBox" onchange="const b=window.tempBoxes.find(x=>x.id===this.value); document.getElementById('oPrice').value=b?.savedRate||0; document.getElementById('oQty').oninput()"><option value="">--Select Box--</option></select></div>
+        </div>
+        <div class="formrow3">
+            <div class="field"><label>Quantity *</label><input type="number" id="oQty" value="1000" oninput="document.getElementById('oTot').value=(this.value*document.getElementById('oPrice').value).toFixed(2)"></div>
+            <div class="field"><label>Unit Price (₹) *</label><input type="number" id="oPrice" oninput="document.getElementById('oQty').oninput()"></div>
+            <div class="field"><label>Total Amount</label><input id="oTot" disabled style="font-weight:bold;color:var(--primary)"></div>
+        </div>`;
+    openModal('Book New Order', [{key:'date',label:'Date',type:'date',default:todayStr()},{key:'poNo',label:'PO #',default:'PO-'+DB.settings.nextOrderNo},{customHtml}], {}, (v) => {
+        const cId = document.getElementById('oComp').value, bId = document.getElementById('oBox').value, q = num(document.getElementById('oQty').value), p = num(document.getElementById('oPrice').value);
+        if(!cId || !bId || q<=0) return snack('Fill required fields');
+        DB.orders.push({id:uid(), poNo:v.poNo||'PO-'+DB.settings.nextOrderNo++, date:v.date, dispatchDate:null, companyId:cId, boxId:bId, qty:q, price:p, status:'Received'});
+        saveDB(); closeModal(); snack('Order Booked'); DASH_TAB='Received'; renderDashboard();
+    });
+}
+
+/* =========================================================================
+   2. MASTERS
+   ========================================================================= */
+function renderMaster(store, title, cols, mapper, defs) {
+  const list = DB[store] || [];
+  const rows = list.map(item=>({id:item.id, cells:mapper(item)}));
+  document.getElementById('content').innerHTML = `
+    <div class="card"><div class="hd"><div><h3>${title}</h3><div class="hint">${list.length} records</div></div>
+    <button class="btn btn-primary btn-sm" onclick="addMaster('${store}')">+ Add Record</button></div>
+    <div class="bd pad0">${tableHTML(cols, rows.map(r=>r.cells), {actions: i=>`<button class="iconbtn" onclick="deleteMaster('${store}','${rows[i].id}')">🗑</button>`})}</div></div>`;
+}
+function addMaster(store){
+  const defs = {
+    companies:[{key:'name',label:'Company'},{key:'gstin',label:'GSTIN'},{key:'phone',label:'Phone'},{key:'address',label:'Address',type:'textarea'}],
+    parties:[{key:'name',label:'Mill/Party'},{key:'type',label:'Type',type:'select',options:[{value:'Supplier',label:'Supplier'},{value:'Customer',label:'Customer'}]},{key:'contact',label:'Contact'}],
+    materials:[{key:'name',label:'Paper Name'},{key:'category',label:'Category',type:'select',options:[{value:'Raw',label:'Raw'},{value:'FG',label:'Finished Good'}]}]
+  };
+  openModal('Add Record', defs[store], {}, (v)=>{ v.id=uid(); DB[store].push(v); saveDB(); snack('Saved'); RENDER[CURRENT](); });
+}
+function deleteMaster(store,id){ if(confirm('Delete?')){ DB[store]=DB[store].filter(x=>x.id!==id); saveDB(); RENDER[CURRENT](); } }
+
+/* =========================================================================
+   3. BOX SPECS & SEARCH (Job Card Print)
+   ========================================================================= */
+function renderBoxSpecs(){
+  const compOpts = '<option value="">-- Select Company --</option>' + DB.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('content').innerHTML = `
+    <div class="card" style="border-top: 4px solid var(--primary);">
+      <div class="hd"><h3>Form #2: Technical Box Specs</h3></div>
+      <div class="bd" style="background:#fafafa;">
+        <div class="formrow2"><div class="field"><label>SR NO. *</label><input id="bxSr" value="${DB.settings.nextBoxSr}" disabled></div><div class="field"><label>Company *</label><select id="bxComp">${compOpts}</select></div></div>
+        <div class="formrow2"><div class="field"><label>Box Name *</label><input id="bxName" placeholder="600x1200 Carton"></div><div class="field"><label>Box Type</label><input id="bxType" placeholder="Master Carton"></div></div>
+        <div class="sectionTitle">Dimensions (L x W x H)</div>
+        <div class="formrow4"><div class="field"><label>L</label><input id="bxL" type="number" step="0.01"></div><div class="field"><label>W</label><input id="bxW" type="number" step="0.01"></div><div class="field"><label>H</label><input id="bxH" type="number" step="0.01"></div><div class="field"><label>Unit</label><select id="bxUnit"><option>inch</option><option>mm</option></select></div></div>
+        <div class="sectionTitle">Manufacturing Specs</div>
+        <div class="formrow4"><div class="field"><label>Ply</label><select id="bxPly"><option>3</option><option selected>5</option><option>7</option></select></div><div class="field"><label>Deckle</label><input id="bxDeckle" type="number" step="0.01"></div><div class="field"><label>Cutting</label><input id="bxCutting" type="number" step="0.01"></div><div class="field"><label>Ups</label><input id="bxUps" type="number" step="0.01" value="0.5"></div></div>
+        <div class="sectionTitle">Material</div>
+        <div class="formrow3"><div class="field"><label>Top Paper</label><input id="bxTop" placeholder="180 GSM Kraft"></div><div class="field"><label>Flute Paper</label><input id="bxFlute" placeholder="140 GSM Fluting"></div><div class="field"><label>Bottom Paper</label><input id="bxBot" placeholder="150 GSM Kraft"></div></div>
+        <div style="margin-top:20px;"><button class="btn btn-primary" onclick="saveBoxSpec()">save ✓</button></div>
+      </div>
+    </div>`;
+}
+function saveBoxSpec(){
+  const cId=document.getElementById('bxComp').value, nm=document.getElementById('bxName').value;
+  if(!cId||!nm)return snack('Company and Box Name required');
+  DB.boxes.push({ id:uid(), srNo:DB.settings.nextBoxSr++, companyId:cId, boxName:nm, boxType:document.getElementById('bxType').value, l:num(document.getElementById('bxL').value), w:num(document.getElementById('bxW').value), h:num(document.getElementById('bxH').value), unit:document.getElementById('bxUnit').value, ply:parseInt(document.getElementById('bxPly').value), deckle:num(document.getElementById('bxDeckle').value), cutting:num(document.getElementById('bxCutting').value), boxInSheet:num(document.getElementById('bxUps').value), topPaper:document.getElementById('bxTop').value, flutePaper:document.getElementById('bxFlute').value, bottomPaper:document.getElementById('bxBot').value, weight:Math.round(num(document.getElementById('bxDeckle').value)*num(document.getElementById('bxCutting').value)*180/1550), savedRate:0 });
+  saveDB(); snack('Saved'); document.getElementById('bxName').value='';
+}
+
+window._boxF = {};
+function renderSearchBox() {
+  const f = window._boxF;
+  let list = DB.boxes;
+  if(f.kw) list = list.filter(b => b.boxName.toLowerCase().includes(f.kw.toLowerCase()));
+  if(f.cId) list = list.filter(b => b.companyId === f.cId);
+
+  const compOpts = '<option value="">All Companies</option>' + DB.companies.map(c=>`<option value="${c.id}" ${f.cId===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  let body = '<div class="empty">No boxes found.</div>';
+  if(list.length){
+      body = `<div class="tblwrap"><table><thead><tr><th>SR NO</th><th>Box Name</th><th>Type</th><th>Company</th><th>L x W x H</th><th>Ply</th><th>Deckle</th><th>Cutting</th><th>Weight</th><th>Rate</th><th>Action</th></tr></thead><tbody>`+
+      list.map(b=>`<tr><td>${b.srNo}</td><td><b>${esc(b.boxName)}</b></td><td>${esc(b.boxType)}</td><td>${esc(nameOf(DB.companies,b.companyId))}</td><td>${b.l}x${b.w}x${b.h} ${b.unit}</td><td style="color:var(--primary);font-weight:bold;">${b.ply} Ply</td><td>${b.deckle}</td><td>${b.cutting}</td><td>${b.weight} g</td><td>₹${(b.savedRate||0).toFixed(2)}</td><td class="rowActions" style="gap:10px;">
+        <button class="btn btn-primary btn-sm" title="Print Job Card" onclick="promptJobCard('${b.id}')" style="padding:4px 8px;font-size:11px;">🖶 Job Card</button>
+        <button class="iconbtn" onclick="if(confirm('Delete?')){DB.boxes=DB.boxes.filter(x=>x.id!=='${b.id}');saveDB();renderSearchBox()}">🗑</button>
+      </td></tr>`).join('')+`</tbody></table></div>`;
+  }
+  
+  document.getElementById('content').innerHTML = `
+      <div class="card"><div class="hd"><div><h3>Search Box & Job Card</h3></div><button class="btn btn-success btn-sm" onclick="csvExport('Boxes',['SR NO','Box Name','Company','Dimensions','Rate'], DB.boxes.map(b=>[b.srNo,b.boxName,nameOf(DB.companies,b.companyId),b.l+'x'+b.w,b.savedRate]))">⭳ CSV</button></div>
+      <div class="bd" style="background:#fafafa;border-bottom:1px solid var(--line);">
+          <div class="formrow3">
+              <div class="field" style="margin:0;"><label>Keyword</label><input placeholder="Box name..." value="${esc(f.kw||'')}" oninput="window._boxF.kw=this.value;renderSearchBox()"></div>
+              <div class="field" style="margin:0;"><label>Company</label><select onchange="window._boxF.cId=this.value;renderSearchBox()">${compOpts}</select></div>
+          </div>
+      </div>
+      <div class="bd pad0">${body}</div></div>`;
+}
+
+function promptJobCard(boxId) {
+  const b = DB.boxes.find(x => x.id === boxId); if(!b) return;
+  const fields = [
+    {key: 'topPaper', label: 'Top Paper Material', default: b.topPaper},
+    {key: 'topPaperQty', label: 'Top Paper Quantity (Kg)', type: 'number', default: 0},
+    {key: 'liner', label: 'Liner Material (Flute / Bottom)', default: (b.flutePaper + " / " + b.bottomPaper)},
+    {key: 'linerQty', label: 'Liner Quantity (Kg)', type: 'number', default: 0},
+    {key: 'qty', label: 'Production Box Quantity', type: 'number', default: 1000},
+    {key: 'flexo', label: 'Flexo Printing Process', type: 'checkbox', default: false},
+    {key: 'offset', label: 'Offset Printing Process', type: 'checkbox', default: false},
+    {key: 'artwork', label: 'Attach Box Artwork (PDF/JPEG - Cloud Sync)', type: 'file'}
+  ];
+  openModal('Generate Job Card: ' + b.boxName, fields, {}, (v) => {
+    let pStr = []; if(v.flexo) pStr.push("Flexo Printing"); if(v.offset) pStr.push("Offset Printing");
+    const pDisp = pStr.length > 0 ? pStr.join(", ") : "None";
+    const html = `<div style="border:2px solid #000;padding:20px;max-width:800px;margin:0 auto;">
+        <h2 style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-top:0;">JOB CARD</h2>
+        <div style="display:flex;justify-content:space-between;margin-bottom:15px;"><div><b>Job No:</b> _________</div><div><b>Date:</b> ${todayStr()}</div></div>
+        <table>
+            <tr><th style="width:30%">Client Name</th><td colspan="3">${nameOf(DB.companies, b.companyId)}</td></tr>
+            <tr><th>Box Name</th><td colspan="3">${b.boxName} (${b.boxType})</td></tr>
+            <tr><th>Dimensions</th><td colspan="3">${b.l} x ${b.w} x ${b.h} ${b.unit}</td></tr>
+            <tr><th>Ply</th><td>${b.ply} Ply</td><th>Deckle x Cutting</th><td>${b.deckle} x ${b.cutting}</td></tr>
+            <tr><th>Top Paper</th><td>${v.topPaper}</td><th>Top Paper Qty</th><td>${v.topPaperQty} Kg</td></tr>
+            <tr><th>Liner (Flute/Bottom)</th><td>${v.liner}</td><th>Liner Qty</th><td>${v.linerQty} Kg</td></tr>
+            <tr><th>Printing Process</th><td colspan="3"><b>${pDisp}</b></td></tr>
+            <tr><th style="background:#eee;">Production Qty</th><td colspan="3" style="background:#eee;font-size:18px;font-weight:bold;">${v.qty} Boxes</td></tr>
+        </table>
+        <div style="margin-top:40px;display:flex;justify-content:space-between;"><div>Prepared By: ________________</div><div>Checked By: ________________</div></div></div>`;
+    printHTML(html, 'Job Card - ' + b.boxName); closeModal();
+  }, '🖶 Print Card');
+}
+
+/* =========================================================================
+   4. COSTING SHEET
+   ========================================================================= */
+function renderBoxCosting(){
+  const compOpts = '<option value="">Type company name...</option>' + DB.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><h2 style="color:var(--primary);">Box Price Costing Sheet</h2></div>
+    <div class="card" style="background:#fafafa;"><div class="bd">
+        <div class="formrow2"><div class="field"><label>1. Company Quick Search</label><select id="cstComp" onchange="document.getElementById('cstBox').innerHTML='<option value=\\\'\\\'>--Select--</option>'+DB.boxes.filter(b=>b.companyId===this.value).map(b=>'<option value=\\''+b.id+'\\'>'+b.boxName+'</option>').join('')">${compOpts}</select></div>
+        <div class="field"><label>2. Select Box Size</label><select id="cstBox" onchange="cstLoadDetails()"><option>-- Select Box --</option></select></div></div>
+        
+        <div style="overflow-x:auto;margin-top:20px;">
+          <table class="costing-table">
+            <thead><tr><th>#</th><th>PAPER</th><th>DECKLE</th><th>CUTTING</th><th>CONST</th><th>GSM</th><th>DIV</th><th>RATE/KG</th><th>COST</th><th>WT (g)</th></tr></thead>
+            <tbody id="cstRows"><tr><td colspan="10" class="empty" style="background:#fff;">Select a box size</td></tr></tbody>
+          </table>
+        </div>
+        
+        <div class="formrow2" style="margin-top:20px;align-items:start;">
+          <div class="costing-summary-box">
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Lamination</label><input type="number" id="cstLam" value="4.86" style="width:80px;text-align:right;" oninput="cstCalcTotal()"></div>
+            <hr style="border:0;border-top:1px solid #ccc;margin:15px 0;">
+            <div style="font-size:14px;font-weight:bold;text-transform:uppercase;">Total Finished Weight</div>
+            <div id="cstTotalWt" class="grand-total">0 g</div>
+          </div>
+          <div class="costing-summary-box" style="background:#fff;border-color:var(--line);">
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Print</label><input type="number" id="cstPrint" value="1.0" style="width:80px;text-align:right;border:1px solid #ddd;" oninput="cstCalcTotal()"></div>
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Label</label><input type="number" id="cstLabel" value="3.6" style="width:80px;text-align:right;border:1px solid #ddd;" oninput="cstCalcTotal()"></div>
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Extra</label><input type="number" id="cstExtra" value="5.0" style="width:80px;text-align:right;border:1px solid #ddd;" oninput="cstCalcTotal()"></div>
+            <div style="display:flex;justify-content:space-between;margin:10px 0;"><label>Total Sheet Cost</label><b id="cstShtCost">0.00</b></div>
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Ups</label><input type="number" id="cstUps" value="0.5" style="width:80px;text-align:right;border:1px solid #ddd;" oninput="cstCalcTotal()"></div>
+            <div class="field" style="display:flex;justify-content:space-between;"><label>Margin (%)</label><input type="number" id="cstMargin" value="15" style="width:80px;text-align:right;border:1px solid #ddd;" oninput="cstCalcTotal()"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;"><label>GRAND TOTAL</label><div id="cstGrandTotal" class="grand-total" style="margin:0;">0.00 ₹</div></div>
+            <div style="margin-top:20px;text-align:right;"><button class="btn btn-primary" onclick="const bId=document.getElementById('cstBox').value; if(!bId)return snack('Select Box'); DB.boxes.find(b=>b.id===bId).savedRate=window._gTot; saveDB(); snack('Rate Saved!');">💾 Save Rate to Box</button></div>
+          </div>
+        </div>
+    </div></div>`;
+}
+function cstLoadDetails(){
+  const b = DB.boxes.find(x=>x.id===document.getElementById('cstBox').value); if(!b) return;
+  window._cRows = [{i:"DUPLEX",d:b.deckle,c:b.cutting,cn:1550,g:180,r:37},{i:"CRAFT",d:b.deckle,c:b.cutting,cn:1550,g:140,r:36}];
+  document.getElementById('cstRows').innerHTML = window._cRows.map((r,i)=>`<tr><td>${i+1}</td><td><input value="${r.i}" disabled></td><td><input id="r${i}_d" type="number" value="${r.d}" oninput="cstCalcTotal()"></td><td><input id="r${i}_c" type="number" value="${r.c}" oninput="cstCalcTotal()"></td><td><input id="r${i}_cn" type="number" value="${r.cn}" disabled></td><td><input id="r${i}_g" type="number" value="${r.g}" oninput="cstCalcTotal()"></td><td><input value="1000" disabled></td><td><input id="r${i}_r" type="number" value="${r.r}" oninput="cstCalcTotal()"></td><td><input id="r${i}_pc" disabled style="font-weight:bold;color:var(--primary);"></td><td><input id="r${i}_wt" disabled style="font-weight:bold;"></td></tr>`).join('');
+  document.getElementById('cstUps').value = b.boxInSheet; cstCalcTotal();
+}
+function cstCalcTotal(){
+  if(!window._cRows) return; let totWt=0, totPc=0;
+  window._cRows.forEach((_,i)=>{
+    const d=num(document.getElementById(`r${i}_d`).value), c=num(document.getElementById(`r${i}_c`).value), cn=num(document.getElementById(`r${i}_cn`).value), g=num(document.getElementById(`r${i}_g`).value), r=num(document.getElementById(`r${i}_r`).value);
+    const wt = cn?(d*c*g)/cn:0; const pc = (wt/1000)*r;
+    document.getElementById(`r${i}_wt`).value = wt.toFixed(0); document.getElementById(`r${i}_pc`).value = pc.toFixed(2);
+    totWt+=wt; totPc+=pc;
+  });
+  document.getElementById('cstTotalWt').innerText = totWt.toFixed(0)+' g';
+  const sc = totPc + num(document.getElementById('cstLam').value) + num(document.getElementById('cstPrint').value) + num(document.getElementById('cstLabel').value) + num(document.getElementById('cstExtra').value);
+  document.getElementById('cstShtCost').innerText = sc.toFixed(2);
+  const u = num(document.getElementById('cstUps').value); const bc = u ? sc/u : sc;
+  const gt = bc + (bc * num(document.getElementById('cstMargin').value)/100);
+  window._gTot = parseFloat(gt.toFixed(2)); document.getElementById('cstGrandTotal').innerText = window._gTot.toFixed(2)+' ₹';
+}
+
+/* =========================================================================
+   5. PAPER STOCK IN & OUT & LEDGER
+   ========================================================================= */
+const paperOpts = ()=>DB.materials.map(m=>`<option value="${esc(m.name)}">`).join('');
+const millOpts = ()=>`<option value="">--Select--</option>`+DB.parties.filter(p=>p.type==='Supplier').map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+
+function renderPaperPurchase(){
+  const rows = DB.reels.slice().sort((a,b)=>b.dateIn.localeCompare(a.dateIn));
+  document.getElementById('content').innerHTML = `
+    <div class="card"><div class="hd"><div><h3>Paper Purchase Register</h3></div><button class="btn btn-primary btn-sm" onclick="openPurchaseForm()">+ New Purchase</button></div>
+    <div class="bd pad0">${tableHTML(['Date','Reel No','Paper','Mill','Shade','Qty','Rate','Status'], rows.map(r=>[fmtDate(r.dateIn), r.reelNo, r.paperName, nameOf(DB.parties,r.millId), r.shade, r.weightIn+' kg', '₹'+r.rateKg, r.quality]), {actions:i=>`<button class="iconbtn" onclick="if(confirm('Delete?')){DB.reels=DB.reels.filter(x=>x.id!=='${rows[i].id}');saveDB();renderPaperPurchase()}">🗑</button>`})}</div></div>`;
+}
+function openPurchaseForm(){
+  const html = `
+    <div class="formrow2"><div class="field"><label>Date</label><input id="ppDate" type="date" value="${todayStr()}"></div><div class="field"><label>Reel No *</label><input id="ppReel" value="C${DB.settings.nextReelSr}"></div></div>
+    <div class="formrow2"><div class="field"><label>Paper *</label><input id="ppPaper" list="ppPL"><datalist id="ppPL">${paperOpts()}</datalist></div><div class="field"><label>Mill *</label><select id="ppMill">${millOpts()}</select></div></div>
+    <div class="formrow3"><div class="field"><label>Qty (Kg) *</label><input type="number" id="ppQty"></div><div class="field"><label>Rate</label><input type="number" id="ppRate"></div><div class="field"><label>Shade</label><input id="ppShade"></div></div>`;
+  openModal('Paper Purchase', [{customHtml:html}], {}, ()=>{
+    const rn=document.getElementById('ppReel').value, p=document.getElementById('ppPaper').value, m=document.getElementById('ppMill').value, q=num(document.getElementById('ppQty').value);
+    if(!rn||!p||!m||q<=0) return snack('Fill required fields');
+    DB.reels.push({id:uid(), reelNo:rn, zoneId:'', paperName:p, millId:m, millReelNo:'', shade:document.getElementById('ppShade').value, rateKg:num(document.getElementById('ppRate').value), quality:'OK', weightIn:q, weightBalance:q, dateIn:document.getElementById('ppDate').value||todayStr(), remark:''});
+    DB.settings.nextReelSr++; saveDB(); closeModal(); snack('Purchased!'); renderPaperPurchase();
+  });
+}
+
+function renderPaperOut(){
+  const rOpts = `<option value="">--Select Stock Reel--</option>`+DB.reels.filter(r=>r.weightBalance>0&&r.quality!=='Hold').map(r=>`<option value="${r.id}">[Reel: ${r.reelNo}] ${r.paperName} | ${r.weightBalance} Kg (${nameOf(DB.parties,r.millId)})</option>`).join('');
+  const rows = DB.paperOutLog.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('content').innerHTML = `
+    <div class="card" style="border-top:4px solid var(--primary);"><div class="hd"><h3>🛒 Paper OUT (Reel Consumption)</h3></div>
+      <div class="bd" style="background:#fff0f0;">
+        <div class="formrow3"><div class="field"><label>Date</label><input id="poDate" type="date" value="${todayStr()}"></div><div class="field" style="grid-column:span 2;"><label>Stock Reel</label><select id="poReel" onchange="document.getElementById('poBal').value=DB.reels.find(x=>x.id===this.value)?.weightBalance||'';">${rOpts}</select></div></div>
+        <div class="formrow4"><div class="field"><label>Balance (Kg)</label><input id="poBal" disabled style="background:#ffebee;font-weight:bold;color:var(--primary);"></div><div class="field"><label>Out (Kg)</label><input id="poQty" type="number"></div><div class="field"><label>Remark</label><input id="poRem"></div><div class="field" style="display:flex;align-items:flex-end;"><button class="btn btn-primary" style="width:100%;" onclick="poSave()">⇧ OUT</button></div></div>
+      </div>
+    </div>
+    <div class="card"><div class="hd"><h3>Outward Log</h3></div><div class="bd pad0">${tableHTML(['Date','Reel No','Paper','Qty Out','Balance','Remark'], rows.map(o=>{ const r=DB.reels.find(x=>x.id===o.reelId); return [fmtDate(o.date), `<b>${r?r.reelNo:'-'}</b>`, r?r.paperName:'-', `<b style="color:var(--primary)">${o.qtyOut} kg</b>`, (r?r.weightBalance:'-')+' kg', o.remark]; }), {actions:i=>`<button class="iconbtn" onclick="if(confirm('Delete?')){ const o=DB.paperOutLog['${i}']; const r=DB.reels.find(x=>x.id===o.reelId); if(r)r.weightBalance+=o.qtyOut; DB.paperOutLog.splice('${i}',1); saveDB(); renderPaperOut(); }">🗑</button>`})}</div></div>`;
+}
+function poSave(){
+  const id=document.getElementById('poReel').value, q=num(document.getElementById('poQty').value);
+  const r=DB.reels.find(x=>x.id===id);
+  if(!r) return snack('Select Reel'); if(q<=0||q>r.weightBalance) return snack('Invalid Qty');
+  r.weightBalance -= q; DB.paperOutLog.push({id:uid(), date:document.getElementById('poDate').value, reelId:r.id, qtyOut:q, remark:document.getElementById('poRem').value});
+  saveDB(); snack('Reel Deducted'); renderPaperOut();
+}
+
+function renderStock(){
+  let list = DB.reels.filter(r=>r.weightBalance>0);
+  const tot = list.reduce((s,r)=>s+r.weightBalance,0), cost = list.reduce((s,r)=>s+(r.weightBalance*r.rateKg),0);
+  document.getElementById('content').innerHTML = `
+    <div class="grid kpis"><div class="kpi"><div class="lbl">Total Weight</div><div class="val">${(tot/1000).toFixed(3)} Ton</div></div><div class="kpi a"><div class="lbl">Stock Value</div><div class="val">₹${cost.toFixed(2)}</div></div></div>
+    <div class="card"><div class="hd"><div><h3>Reels in Store</h3><div class="hint">${list.length} reels available</div></div><button class="btn btn-success btn-sm" onclick="csvExport('Stock',['Reel No','Paper','Mill','Shade','Weight','Rate','Amt'], DB.reels.filter(r=>r.weightBalance>0).map(r=>[r.reelNo,r.paperName,nameOf(DB.parties,r.millId),r.shade,r.weightBalance,r.rateKg,(r.weightBalance*r.rateKg)]))">⭳ Excel</button></div>
+    <div class="bd pad0">${tableHTML(['R.No','Paper Name','Weight(kg)','Mill','Shade','Days','Rate','Amt','Status'], list.map(r=>[r.reelNo, r.paperName, r.weightBalance, nameOf(DB.parties,r.millId), r.shade, Math.floor((new Date()-new Date(r.dateIn))/86400000), r.rateKg, (r.weightBalance*r.rateKg).toFixed(2), r.quality==='Hold'?'<span class="badge b-warn">Hold</span>':'<span class="badge b-ok">Full/End</span>']))}</div></div>`;
+}
+
+/* =========================================================================
+   6. REPORTS
+   ========================================================================= */
+function renderReports(){
+  document.getElementById('content').innerHTML = `
+    <div class="card"><div class="hd"><h3>System Reports (43 Configured)</h3></div><div class="bd">
+      <div class="repGrid">
+        <div class="repTile" onclick="alert('Demo: Generates CSV of Purchase Ledger')"><div class="rn">Paper In</div><div class="rt">Purchase Register</div><div class="rd">All purchased reels</div></div>
+        <div class="repTile" onclick="alert('Demo: Generates CSV of Outward Ledger')"><div class="rn">Paper Out</div><div class="rt">Consumption Log</div><div class="rd">All issued quantities</div></div>
+        <div class="repTile" onclick="alert('Demo: Generates Master CSV')"><div class="rn">Stock</div><div class="rt">Master Ledger</div><div class="rd">In vs Out reconciliation</div></div>
+      </div>
+    </div></div>`;
+}
+
+/* =========================================================================
+   RENDER REGISTRY
+   ========================================================================= */
+const RENDER = {
+  dashboard: renderDashboard,
+  m_company: ()=>renderMaster('companies','Company Master',['Name','GSTIN','Phone','Address'], c=>[esc(c.name),esc(c.gstin),esc(c.phone),esc(c.address)]),
+  m_party: ()=>renderMaster('parties','Mill / Party Master',['Name','Type','Contact'], p=>[esc(p.name),esc(p.type),esc(p.contact)]),
+  m_material: ()=>renderMaster('materials','Paper Master',['Name','Category'], m=>[esc(m.name),esc(m.category)]),
+  box_specs: renderBoxSpecs,
+  search_box: renderSearchBox,
+  box_costing: renderBoxCosting,
+  paperPurchase: renderPaperPurchase,
+  paperOut: renderPaperOut,
+  stock: renderStock,
+  reports: renderReports
+};
+</script>
+</body>
+</html>
